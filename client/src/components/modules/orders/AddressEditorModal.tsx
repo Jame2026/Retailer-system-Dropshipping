@@ -82,7 +82,7 @@ export const AddressEditorModal: React.FC<AddressEditorModalProps> = ({
       description="Clean and validate recipient delivery address before factory dispatch."
       maxWidth="lg"
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4 text-slate-800">
         <Input
           label="Recipient Full Name"
           value={formData.shippingName}
@@ -141,7 +141,7 @@ export const AddressEditorModal: React.FC<AddressEditorModalProps> = ({
           />
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
           <Button type="button" variant="ghost" onClick={onClose}>
             Cancel
           </Button>

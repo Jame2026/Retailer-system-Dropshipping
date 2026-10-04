@@ -7,7 +7,7 @@ import { Card } from '../components/common/Card.js';
 import { Input } from '../components/common/Input.js';
 import { Button } from '../components/common/Button.js';
 import { formatCurrency } from '../utils/formatCurrency.js';
-import { Search, Sparkles, Plus, ExternalLink, Factory } from 'lucide-react';
+import { Search, Sparkles, Plus, Factory } from 'lucide-react';
 
 export const SourcingPage: React.FC = () => {
   const { showToast } = useNotification();
@@ -82,7 +82,7 @@ export const SourcingPage: React.FC = () => {
           variant="primary"
           size="sm"
           onClick={() => setIsSourcingModalOpen(true)}
-          className="bg-gradient-to-r from-teal-500 to-teal-400 text-slate-950 font-bold"
+          className="bg-teal-600 hover:bg-teal-500 text-white font-bold"
         >
           <Sparkles className="w-3.5 h-3.5" />
           Request Custom Product Quotation
@@ -99,7 +99,7 @@ export const SourcingPage: React.FC = () => {
               onChange={(e) => setKeyword(e.target.value)}
               className="pl-9"
             />
-            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
           </div>
           <Button type="submit" variant="secondary" isLoading={loading}>
             Search Factory Catalog
@@ -112,37 +112,37 @@ export const SourcingPage: React.FC = () => {
         {displayList.map((item) => (
           <Card key={item.pid} hoverEffect className="flex flex-col justify-between space-y-4 p-5">
             <div className="space-y-3">
-              <div className="h-44 rounded-xl overflow-hidden bg-slate-950 border border-slate-800 relative group">
+              <div className="h-44 rounded-xl overflow-hidden bg-slate-50 border border-slate-200 relative group flex items-center justify-center">
                 <img
                   src={item.productImage || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&q=80'}
                   alt={item.productName}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
                 />
-                <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded bg-slate-950/80 border border-slate-700 text-[10px] font-mono font-semibold text-teal-300 backdrop-blur-md">
+                <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded bg-white/90 border border-slate-200 text-[10px] font-mono font-bold text-slate-800 backdrop-blur-md shadow-sm">
                   PID: {item.pid}
                 </div>
               </div>
 
               <div>
-                <h4 className="text-sm font-bold text-white line-clamp-2">{item.productName}</h4>
+                <h4 className="text-sm font-bold text-slate-900 line-clamp-2">{item.productName}</h4>
                 <div className="mt-2 flex items-center justify-between text-xs">
-                  <span className="text-slate-400">Factory Cost:</span>
-                  <span className="font-mono font-bold text-teal-400">
+                  <span className="text-slate-500">Factory Cost:</span>
+                  <span className="font-mono font-bold text-teal-700">
                     {formatCurrency(item.sellPrice || 10.0)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-xs mt-0.5">
-                  <span className="text-slate-400">Est. US Shipping:</span>
-                  <span className="font-mono text-slate-300">
+                  <span className="text-slate-500">Est. US Shipping:</span>
+                  <span className="font-mono text-slate-700 font-semibold">
                     {formatCurrency(item.shippingPrice || 3.5)}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
-              <div className="text-[11px] text-slate-400 flex items-center gap-1">
-                <Factory className="w-3.5 h-3.5 text-slate-500" />
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+              <div className="text-[11px] text-slate-500 flex items-center gap-1 font-medium">
+                <Factory className="w-3.5 h-3.5 text-slate-400" />
                 CJ Factory
               </div>
 

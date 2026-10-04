@@ -4,7 +4,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '.
 import { Badge } from '../../common/Badge.js';
 import { Button } from '../../common/Button.js';
 import { formatCurrency } from '../../../utils/formatCurrency.js';
-import { Edit2, Trash2, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Edit2, Trash2, ShieldCheck } from 'lucide-react';
 
 export interface SkuMappingTableProps {
   mappings: SkuMapping[];
@@ -21,8 +21,8 @@ export const SkuMappingTable: React.FC<SkuMappingTableProps> = ({
 }) => {
   if (loading) {
     return (
-      <div className="w-full py-16 flex flex-col items-center justify-center text-slate-400 gap-3">
-        <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="w-full py-16 flex flex-col items-center justify-center text-slate-500 gap-3">
+        <div className="w-8 h-8 border-2 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
         <p className="text-xs font-semibold">Loading SKU Mappings...</p>
       </div>
     );
@@ -30,8 +30,8 @@ export const SkuMappingTable: React.FC<SkuMappingTableProps> = ({
 
   if (mappings.length === 0) {
     return (
-      <div className="w-full py-16 border border-slate-800 rounded-2xl bg-slate-900/40 text-center">
-        <p className="text-slate-400 text-sm font-medium">No SKU mappings created yet.</p>
+      <div className="w-full py-16 border border-slate-200 rounded-2xl bg-white text-center shadow-sm">
+        <p className="text-slate-500 text-sm font-medium">No SKU mappings created yet.</p>
       </div>
     );
   }
@@ -54,17 +54,17 @@ export const SkuMappingTable: React.FC<SkuMappingTableProps> = ({
           <TableRow key={mapping.id}>
             <TableCell>
               <div>
-                <p className="font-mono font-bold text-teal-400 text-xs">{mapping.storeSku}</p>
-                <p className="text-xs text-slate-200 mt-0.5 line-clamp-1">{mapping.productName}</p>
+                <p className="font-mono font-bold text-teal-700 text-xs">{mapping.storeSku}</p>
+                <p className="text-xs text-slate-800 mt-0.5 line-clamp-1 font-medium">{mapping.productName}</p>
               </div>
             </TableCell>
             <TableCell>
               <div className="text-xs">
-                <span className="font-semibold text-slate-200 flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
+                <span className="font-semibold text-slate-900 flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
                   {mapping.primarySupplier}: {mapping.primarySupplierSku}
                 </span>
-                <span className="text-[11px] text-slate-400">
+                <span className="text-[11px] text-slate-500">
                   Cost: {formatCurrency(mapping.primaryCostPrice)} + Shipping: {formatCurrency(mapping.primaryShippingCost)}
                 </span>
               </div>
@@ -72,21 +72,21 @@ export const SkuMappingTable: React.FC<SkuMappingTableProps> = ({
             <TableCell>
               {mapping.backupSupplier ? (
                 <div className="text-xs">
-                  <span className="font-semibold text-slate-300">
+                  <span className="font-semibold text-slate-800">
                     {mapping.backupSupplier}: {mapping.backupSupplierSku || 'Mapped'}
                   </span>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-slate-500">
                     Cost: {formatCurrency(mapping.backupCostPrice || mapping.primaryCostPrice)}
                   </p>
                 </div>
               ) : (
-                <span className="text-xs text-slate-500 italic">No Backup Configured</span>
+                <span className="text-xs text-slate-400 italic">No Backup Configured</span>
               )}
             </TableCell>
-            <TableCell className="font-mono text-xs text-slate-300 font-semibold">
+            <TableCell className="font-mono text-xs text-slate-700 font-semibold">
               {mapping.markupMultiplier}x (+{formatCurrency(mapping.shippingBufferUsd)})
             </TableCell>
-            <TableCell className="font-mono font-bold text-white text-xs">
+            <TableCell className="font-mono font-bold text-slate-900 text-xs">
               {formatCurrency(mapping.calculatedSellingPrice)}
             </TableCell>
             <TableCell>
@@ -102,7 +102,7 @@ export const SkuMappingTable: React.FC<SkuMappingTableProps> = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => onEditMapping(mapping)}
-                    className="p-1.5 text-slate-400 hover:text-white"
+                    className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
                   </Button>
@@ -112,7 +112,7 @@ export const SkuMappingTable: React.FC<SkuMappingTableProps> = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => onDeleteMapping(mapping.id)}
-                    className="p-1.5 text-slate-400 hover:text-rose-400"
+                    className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-slate-100"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>

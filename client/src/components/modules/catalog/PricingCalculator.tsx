@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '../../common/Card.js';
 import { Input } from '../../common/Input.js';
-import { Button } from '../../common/Button.js';
 import { formatCurrency } from '../../../utils/formatCurrency.js';
 import { catalogService } from '../../../services/catalogService.js';
 import { PricingFormulaResult } from '../../../types/catalog.types.js';
@@ -37,12 +36,9 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
     marginPercent: 55.5,
   });
 
-  const [loading, setLoading] = useState(false);
-
   useEffect(() => {
     const calc = async () => {
       try {
-        setLoading(true);
         const data = await catalogService.calculatePricePreview({
           baseCost,
           shippingCost,
@@ -65,8 +61,6 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
           profitMarginUsd,
           marginPercent,
         });
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -74,16 +68,16 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
   }, [baseCost, shippingCost, multiplier, buffer]);
 
   return (
-    <Card className="p-6 border-slate-800 space-y-6">
-      <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+    <Card className="p-6 border-slate-200 space-y-6">
+      <div className="flex items-center justify-between pb-3 border-b border-slate-100">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-teal-500/10 text-teal-400 border border-teal-500/20">
+          <div className="p-2 rounded-xl bg-teal-50 text-teal-600 border border-teal-200">
             <Calculator className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-white">Dynamic Markup Formula Calculator</h3>
-            <p className="text-xs text-slate-400">
-              Formula: <span className="font-mono text-teal-300">Selling Price = ((Cost + Shipping) × Multiplier) + Buffer</span>
+            <h3 className="text-base font-bold text-slate-900">Dynamic Markup Formula Calculator</h3>
+            <p className="text-xs text-slate-500">
+              Formula: <span className="font-mono text-teal-700 font-bold">Selling Price = ((Cost + Shipping) × Multiplier) + Buffer</span>
             </p>
           </div>
         </div>
@@ -122,34 +116,34 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
 
       {/* Output Results Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-        <div className="p-4 rounded-2xl bg-teal-950/40 border border-teal-500/30">
-          <div className="flex items-center justify-between text-teal-400 text-xs font-semibold uppercase">
+        <div className="p-4 rounded-2xl bg-teal-50 border border-teal-200">
+          <div className="flex items-center justify-between text-teal-800 text-xs font-bold uppercase">
             <span>Recommended Price</span>
-            <DollarSign className="w-4 h-4" />
+            <DollarSign className="w-4 h-4 text-teal-600" />
           </div>
-          <div className="text-2xl font-black text-white mt-1 font-mono">
+          <div className="text-2xl font-black text-slate-900 mt-1 font-mono">
             {formatCurrency(result.sellingPrice)}
           </div>
-          <p className="text-[11px] text-teal-300/80 mt-1">Suggested Shopify Retail Tag</p>
+          <p className="text-[11px] text-teal-700 mt-1">Suggested Shopify Retail Tag</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase">
+        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+          <div className="flex items-center justify-between text-slate-600 text-xs font-bold uppercase">
             <span>Net Profit per Unit</span>
-            <TrendingUp className="w-4 h-4 text-emerald-400" />
+            <TrendingUp className="w-4 h-4 text-emerald-600" />
           </div>
-          <div className="text-2xl font-black text-emerald-400 mt-1 font-mono">
+          <div className="text-2xl font-black text-emerald-700 mt-1 font-mono">
             {formatCurrency(result.profitMarginUsd)}
           </div>
           <p className="text-[11px] text-slate-500 mt-1">After total cost deduction</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase">
+        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+          <div className="flex items-center justify-between text-slate-600 text-xs font-bold uppercase">
             <span>Profit Margin</span>
-            <Percent className="w-4 h-4 text-indigo-400" />
+            <Percent className="w-4 h-4 text-indigo-600" />
           </div>
-          <div className="text-2xl font-black text-indigo-400 mt-1 font-mono">
+          <div className="text-2xl font-black text-indigo-700 mt-1 font-mono">
             {result.marginPercent.toFixed(1)}%
           </div>
           <p className="text-[11px] text-slate-500 mt-1">Gross Margin Percentage</p>

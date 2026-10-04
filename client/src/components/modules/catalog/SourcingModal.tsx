@@ -5,7 +5,7 @@ import { Select } from '../../common/Select.js';
 import { Button } from '../../common/Button.js';
 import { sourcingService } from '../../../services/sourcingService.js';
 import { useNotification } from '../../../context/NotificationContext.js';
-import { Compass, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 export interface SourcingModalProps {
   isOpen: boolean;
@@ -65,7 +65,7 @@ export const SourcingModal: React.FC<SourcingModalProps> = ({ isOpen, onClose, o
       description="Submit any competitor or supplier link for direct wholesale quotation & factory mapping."
       maxWidth="lg"
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4 text-slate-800">
         <Input
           label="Product URL (AliExpress / 1688 / Taobao / Amazon / Competitor)"
           value={productUrl}
@@ -104,7 +104,7 @@ export const SourcingModal: React.FC<SourcingModalProps> = ({ isOpen, onClose, o
         />
 
         <div>
-          <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+          <label className="block text-xs font-semibold text-slate-700 mb-1.5">
             Custom Requirements / Notes
           </label>
           <textarea
@@ -112,11 +112,11 @@ export const SourcingModal: React.FC<SourcingModalProps> = ({ isOpen, onClose, o
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
             placeholder="e.g. Need US plug adapter, custom black packaging box, English user manual."
-            className="w-full bg-slate-950/60 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-teal-500"
+            className="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-500/20 shadow-sm"
           />
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
           <Button type="button" variant="ghost" onClick={onClose}>
             Cancel
           </Button>

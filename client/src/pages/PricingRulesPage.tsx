@@ -5,7 +5,7 @@ import { Card } from '../components/common/Card.js';
 import { Input } from '../components/common/Input.js';
 import { Button } from '../components/common/Button.js';
 import { useNotification } from '../context/NotificationContext.js';
-import { Sparkles, Save, CheckCircle } from 'lucide-react';
+import { Sparkles, Save } from 'lucide-react';
 
 export const PricingRulesPage: React.FC = () => {
   const { showToast } = useNotification();
@@ -45,22 +45,22 @@ export const PricingRulesPage: React.FC = () => {
           />
 
           <Card className="space-y-4">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-teal-400" />
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-teal-600" />
               Formula Breakdown & Safety Thresholds
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2">
-                <p className="text-xs font-bold text-slate-200">Global Markup Multiplier</p>
-                <p className="text-xs text-slate-400">
-                  Applied as <span className="text-teal-400 font-mono">Cost × {globalMultiplier}x</span> to cover ad spend (ROAS) and overheads.
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                <p className="text-xs font-bold text-slate-800">Global Markup Multiplier</p>
+                <p className="text-xs text-slate-600">
+                  Applied as <span className="text-teal-700 font-mono font-bold">Cost × {globalMultiplier}x</span> to cover ad spend (ROAS) and overheads.
                 </p>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2">
-                <p className="text-xs font-bold text-slate-200">Shipping Buffer ($ USD)</p>
-                <p className="text-xs text-slate-400">
-                  Fixed <span className="text-teal-400 font-mono">+${shippingBuffer.toFixed(2)}</span> buffer added to guard against weight discrepancies and remote area surcharges.
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                <p className="text-xs font-bold text-slate-800">Shipping Buffer ($ USD)</p>
+                <p className="text-xs text-slate-600">
+                  Fixed <span className="text-teal-700 font-mono font-bold">+${shippingBuffer.toFixed(2)}</span> buffer added to guard against weight discrepancies and remote area surcharges.
                 </p>
               </div>
             </div>
@@ -70,7 +70,7 @@ export const PricingRulesPage: React.FC = () => {
         {/* Right Column: Global Settings Controls */}
         <div className="space-y-6">
           <Card className="space-y-4">
-            <h3 className="text-sm font-bold text-white">Default Rule Parameters</h3>
+            <h3 className="text-sm font-bold text-slate-900">Default Rule Parameters</h3>
 
             <div className="space-y-4">
               <Input
@@ -104,11 +104,11 @@ export const PricingRulesPage: React.FC = () => {
                     type="checkbox"
                     checked={charmPricingEnabled}
                     onChange={(e) => setCharmPricingEnabled(e.target.checked)}
-                    className="w-4 h-4 rounded text-teal-500 focus:ring-teal-500 bg-slate-950 border-slate-800"
+                    className="w-4 h-4 rounded text-teal-600 focus:ring-teal-500 bg-white border-slate-300"
                   />
                   <div>
-                    <span className="text-xs font-bold text-slate-200">Charm Pricing ($0.99 ending)</span>
-                    <p className="text-[11px] text-slate-400">Automatically round $32.40 → $32.99</p>
+                    <span className="text-xs font-bold text-slate-800">Charm Pricing ($0.99 ending)</span>
+                    <p className="text-[11px] text-slate-500">Automatically round $32.40 → $32.99</p>
                   </div>
                 </label>
               </div>

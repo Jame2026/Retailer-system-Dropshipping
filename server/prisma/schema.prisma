@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum OrderStatus {
@@ -225,3 +226,19 @@ model SourcingRequest {
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
 }
+
+model AdminUser {
+  id                    String         @id @default(uuid())
+  email                 String         @unique
+  passwordHash          String
+  name                  String
+  role                  String         @default("operator") // superadmin, operator, support
+  isActive              Boolean        @default(true)
+  lastLoginAt           DateTime?
+
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  @@index([email])
+}
+

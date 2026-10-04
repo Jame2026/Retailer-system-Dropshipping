@@ -37,9 +37,9 @@ export const SettingsPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Shopify Configuration */}
         <Card className="space-y-4">
-          <div className="flex items-center gap-2.5 pb-2 border-b border-slate-800">
-            <Webhook className="w-5 h-5 text-teal-400" />
-            <h3 className="text-sm font-bold text-white">Shopify Store Webhooks</h3>
+          <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+            <Webhook className="w-5 h-5 text-teal-600" />
+            <h3 className="text-sm font-bold text-slate-900">Shopify Store Webhooks</h3>
           </div>
 
           <div className="space-y-3">
@@ -50,10 +50,10 @@ export const SettingsPage: React.FC = () => {
             />
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Active Webhook Endpoint
               </label>
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-teal-300 select-all">
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 font-mono text-xs text-teal-800 select-all">
                 https://api.yourdomain.com/webhooks/shopify/orders-paid
               </div>
               <p className="text-[11px] text-slate-500 mt-1">
@@ -65,9 +65,9 @@ export const SettingsPage: React.FC = () => {
 
         {/* CJ Dropshipping API */}
         <Card className="space-y-4">
-          <div className="flex items-center gap-2.5 pb-2 border-b border-slate-800">
-            <Key className="w-5 h-5 text-teal-400" />
-            <h3 className="text-sm font-bold text-white">CJ Dropshipping Credentials</h3>
+          <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+            <Key className="w-5 h-5 text-teal-600" />
+            <h3 className="text-sm font-bold text-slate-900">CJ Dropshipping Credentials</h3>
           </div>
 
           <div className="space-y-3">
@@ -93,9 +93,9 @@ export const SettingsPage: React.FC = () => {
 
         {/* Zendrop Backup Connector */}
         <Card className="space-y-4">
-          <div className="flex items-center gap-2.5 pb-2 border-b border-slate-800">
-            <Shield className="w-5 h-5 text-teal-400" />
-            <h3 className="text-sm font-bold text-white">Zendrop Backup Supplier</h3>
+          <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+            <Shield className="w-5 h-5 text-teal-600" />
+            <h3 className="text-sm font-bold text-slate-900">Zendrop Backup Supplier</h3>
           </div>
 
           <div className="space-y-3">
@@ -110,23 +110,23 @@ export const SettingsPage: React.FC = () => {
 
         {/* System Health */}
         <Card className="space-y-4">
-          <div className="flex items-center gap-2.5 pb-2 border-b border-slate-800">
-            <CheckCircle2 className="w-5 h-5 text-teal-400" />
-            <h3 className="text-sm font-bold text-white">Background Workers Status</h3>
+          <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+            <CheckCircle2 className="w-5 h-5 text-teal-600" />
+            <h3 className="text-sm font-bold text-slate-900">Background Workers Status</h3>
           </div>
 
           <div className="space-y-2 text-xs">
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/60 border border-slate-800">
-              <span className="text-slate-300">holdBuffer.worker (6h timer)</span>
-              <span className="text-teal-400 font-bold">● Active (2m cycle)</span>
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+              <span className="text-slate-700 font-medium">holdBuffer.worker (6h timer)</span>
+              <span className="text-teal-700 font-bold">● Active (2m cycle)</span>
             </div>
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/60 border border-slate-800">
-              <span className="text-slate-300">trackingSync.job (USPS/CJ)</span>
-              <span className="text-teal-400 font-bold">● Active (15m cycle)</span>
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+              <span className="text-slate-700 font-medium">trackingSync.job (USPS/CJ)</span>
+              <span className="text-teal-700 font-bold">● Active (15m cycle)</span>
             </div>
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/60 border border-slate-800">
-              <span className="text-slate-300">retryBilling.job</span>
-              <span className="text-teal-400 font-bold">● Active (1h cycle)</span>
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+              <span className="text-slate-700 font-medium">retryBilling.job</span>
+              <span className="text-teal-700 font-bold">● Active (1h cycle)</span>
             </div>
           </div>
         </Card>

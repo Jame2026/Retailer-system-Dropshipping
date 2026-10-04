@@ -67,9 +67,9 @@ export const ManualRetryModal: React.FC<ManualRetryModalProps> = ({
       description="Manually override the 6-hour hold buffer or retry failed billing/fulfillment."
       maxWidth="md"
     >
-      <div className="space-y-4">
-        <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2.5">
-          <AlertTriangle className="w-5 h-5 shrink-0 text-amber-400" />
+      <div className="space-y-4 text-slate-800">
+        <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center gap-2.5">
+          <AlertTriangle className="w-5 h-5 shrink-0 text-amber-600" />
           <span>
             Executing a manual override immediately creates a purchase order on the selected supplier factory.
           </span>
@@ -83,15 +83,15 @@ export const ManualRetryModal: React.FC<ManualRetryModalProps> = ({
         />
 
         <div>
-          <label className="block text-xs font-semibold text-slate-300 mb-1.5">Action Type</label>
+          <label className="block text-xs font-semibold text-slate-700 mb-1.5">Action Type</label>
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => setActionType('RELEASE_NOW')}
               className={`p-2.5 rounded-xl text-xs font-semibold border transition-all text-left ${
                 actionType === 'RELEASE_NOW'
-                  ? 'bg-teal-500/20 border-teal-500 text-teal-300'
-                  : 'bg-slate-950 border-slate-800 text-slate-400'
+                  ? 'bg-teal-50 border-teal-500 text-teal-800 font-bold'
+                  : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
               }`}
             >
               🚀 Release Hold Now
@@ -101,8 +101,8 @@ export const ManualRetryModal: React.FC<ManualRetryModalProps> = ({
               onClick={() => setActionType('RETRY_DISPATCH')}
               className={`p-2.5 rounded-xl text-xs font-semibold border transition-all text-left ${
                 actionType === 'RETRY_DISPATCH'
-                  ? 'bg-teal-500/20 border-teal-500 text-teal-300'
-                  : 'bg-slate-950 border-slate-800 text-slate-400'
+                  ? 'bg-teal-50 border-teal-500 text-teal-800 font-bold'
+                  : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
               }`}
             >
               🔄 Retry Dispatch
@@ -111,7 +111,7 @@ export const ManualRetryModal: React.FC<ManualRetryModalProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+          <label className="block text-xs font-semibold text-slate-700 mb-1.5">
             Admin Reason / Notes (Optional)
           </label>
           <textarea
@@ -119,11 +119,11 @@ export const ManualRetryModal: React.FC<ManualRetryModalProps> = ({
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
             placeholder="e.g. Customer verified address via support ticket"
-            className="w-full bg-slate-950/60 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-teal-500"
+            className="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-teal-600 shadow-sm"
           />
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>

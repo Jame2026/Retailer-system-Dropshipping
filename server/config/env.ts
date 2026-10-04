@@ -9,6 +9,7 @@ const envSchema = z.object({
   APP_URL: z.string().url().default('http://localhost:4000'),
 
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
+  DIRECT_URL: z.string().optional(),
 
   REDIS_HOST: z.string().default('127.0.0.1'),
   REDIS_PORT: z.coerce.number().default(6379),
