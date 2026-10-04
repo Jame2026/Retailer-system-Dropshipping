@@ -1,0 +1,227 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderStatus {
+  PENDING_HOLD
+  HOLD_EXPIRED
+  PROCESSING
+  DISPATCHED_TO_SUPPLIER
+  FAILED_BILLING
+  SUPPLIER_PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+  MANUAL_REVIEW
+}
+
+enum SupplierType {
+  CJ
+  ZENDROP
+  CUSTOM
+}
+
+enum FulfillmentStatus {
+  PENDING
+  PROCESSING
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILED
+}
+
+model Order {
+  id                    String        @id @default(uuid())
+  shopifyOrderId        String        @unique
+  shopifyOrderNumber    String
+  shopifyCreatedAt      DateTime
+  customerEmail         String
+  customerPhone         String?
+  
+  // Shipping Address
+  shippingName          String
+  shippingAddress1      String
+  shippingAddress2      String?
+  shippingCity          String
+  shippingProvince      String
+  shippingProvinceCode  String?
+  shippingZip           String
+  shippingCountry       String        @default("United States")
+  shippingCountryCode   String        @default("US")
+  
+  // Financials
+  currency              String        @default("USD")
+  totalPrice            Float
+  subtotalPrice         Float
+  totalShipping         Float         @default(0.0)
+  totalTax              Float         @default(0.0)
+  financialStatus       String        @default("paid")
+  
+  // State Machine & Timers
+  status                OrderStatus   @default(PENDING_HOLD)
+  holdExpiresAt         DateTime
+  releasedAt            DateTime?
+  dispatchedAt          DateTime?
+  cancelledAt           DateTime?
+  
+  // Supplier Info
+  supplierType          SupplierType?
+  supplierOrderId       String?
+  supplierOrderNumber   String?
+  supplierTotalCost     Float?
+  
+  // Error handling & Retries
+  retryCount            Int           @default(0)
+  lastErrorReason       String?
+  manualReviewNotes     String?
+
+  items                 OrderItem[]
+  fulfillments          Fulfillment[]
+  billingTransactions   BillingTransaction[]
+
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  @@index([status])
+  @@index([holdExpiresAt])
+  @@index([shopifyOrderId])
+}
+
+model OrderItem {
+  id                    String         @id @default(uuid())
+  orderId               String
+  order                 Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  shopifyLineItemId     String
+  shopifyProductId      String?
+  shopifyVariantId      String
+  title                 String
+  variantTitle          String?
+  storeSku              String
+  quantity              Int
+  price                 Float
+  
+  // Sku Mapping Link
+  skuMappingId          String?
+  skuMapping            SkuMapping?    @relation(fields: [skuMappingId], references: [id])
+  
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  @@index([orderId])
+  @@index([storeSku])
+}
+
+model SkuMapping {
+  id                    String         @id @default(uuid())
+  storeSku              String         @unique
+  productName           String
+  
+  // Primary Supplier (Priority 1)
+  primarySupplier       SupplierType   @default(CJ)
+  primarySupplierSku    String
+  primarySupplierPid    String?
+  primarySupplierVid    String?
+  primaryCostPrice      Float
+  primaryShippingCost   Float          @default(0.0)
+  
+  // Backup Supplier (Priority 2)
+  backupSupplier        SupplierType?  @default(ZENDROP)
+  backupSupplierSku     String?
+  backupSupplierPid     String?
+  backupSupplierVid     String?
+  backupCostPrice       Float?
+  backupShippingCost    Float?         @default(0.0)
+  
+  // Pricing Strategy
+  markupMultiplier      Float          @default(2.5)
+  shippingBufferUsd     Float          @default(3.0)
+  calculatedSellingPrice Float
+  isActive              Boolean        @default(true)
+  
+  orderItems            OrderItem[]
+  productVariants       ProductVariant[]
+
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+}
+
+model ProductVariant {
+  id                    String         @id @default(uuid())
+  shopifyVariantId      String         @unique
+  shopifyProductId      String
+  title                 String
+  sku                   String
+  price                 Float
+  costPrice             Float          @default(0.0)
+  inventoryQuantity     Int            @default(0)
+  
+  skuMappingId          String?
+  skuMapping            SkuMapping?    @relation(fields: [skuMappingId], references: [id])
+
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+}
+
+model Fulfillment {
+  id                    String             @id @default(uuid())
+  orderId               String
+  order                 Order              @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  supplierType          SupplierType
+  trackingNumber        String
+  trackingCompany       String             @default("USPS")
+  trackingUrl           String?
+  status                FulfillmentStatus  @default(PENDING)
+  
+  syncedToShopify       Boolean            @default(false)
+  shopifyFulfillmentId  String?
+  syncedAt              DateTime?
+  
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  @@index([orderId])
+  @@index([trackingNumber])
+}
+
+model BillingTransaction {
+  id                    String         @id @default(uuid())
+  orderId               String
+  order                 Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  supplierType          SupplierType
+  amount                Float
+  currency              String         @default("USD")
+  status                String         // SUCCESS, FAILED, PENDING
+  supplierPaymentId     String?
+  failureReason         String?
+  
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  @@index([orderId])
+}
+
+model SourcingRequest {
+  id                    String         @id @default(uuid())
+  productUrl            String
+  targetPrice           Float?
+  estimatedDailyOrders  Int?
+  notes                 String?
+  status                String         @default("PENDING") // PENDING, SOURCING, SOURCED, REJECTED
+  
+  supplierType          SupplierType   @default(CJ)
+  supplierProductId     String?
+  suggestedSku          String?
+  quotedCost            Float?
+
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+}

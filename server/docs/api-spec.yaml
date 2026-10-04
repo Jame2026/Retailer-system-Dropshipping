@@ -1,0 +1,152 @@
+openapi: 3.0.3
+info:
+  title: Retailer System Dropshipping Server API
+  description: Automated Dropshipping Retailer Backend API with Shopify & CJ Dropshipping integration.
+  version: 1.0.0
+servers:
+  - url: http://localhost:4000
+    description: Local development server
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: System is operational
+
+  /api/orders:
+    get:
+      summary: List all orders with pagination and status filter
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [PENDING_HOLD, HOLD_EXPIRED, PROCESSING, DISPATCHED_TO_SUPPLIER, FAILED_BILLING, SHIPPED, CANCELLED, MANUAL_REVIEW]
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Filtered order list
+
+  /api/orders/{id}:
+    get:
+      summary: Inspect order details, line items, and fulfillment history
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Detailed order inspection object
+
+  /api/orders/override:
+    post:
+      summary: Admin manual order override
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orderId, action]
+              properties:
+                orderId:
+                  type: string
+                  format: uuid
+                action:
+                  type: string
+                  enum: [RELEASE_NOW, CANCEL, RETRY_DISPATCH, SWITCH_SUPPLIER, SET_MANUAL_REVIEW]
+                targetSupplier:
+                  type: string
+                  enum: [CJ, ZENDROP, CUSTOM]
+                notes:
+                  type: string
+      responses:
+        '200':
+          description: Action executed
+
+  /api/catalog/mappings:
+    get:
+      summary: List SKU mappings
+      responses:
+        '200':
+          description: Paginated SKU mappings list
+    post:
+      summary: Upsert SKU mapping
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [storeSku, productName, primarySupplierSku, primaryCostPrice]
+              properties:
+                storeSku:
+                  type: string
+                productName:
+                  type: string
+                primarySupplier:
+                  type: string
+                  enum: [CJ, ZENDROP, CUSTOM]
+                primarySupplierSku:
+                  type: string
+                primaryCostPrice:
+                  type: number
+                primaryShippingCost:
+                  type: number
+                backupSupplier:
+                  type: string
+                backupSupplierSku:
+                  type: string
+                backupCostPrice:
+                  type: number
+                markupMultiplier:
+                  type: number
+                shippingBufferUsd:
+                  type: number
+      responses:
+        '200':
+          description: SKU mapping saved
+
+  /webhooks/shopify/orders-paid:
+    post:
+      summary: Ingest Shopify orders/paid webhook
+      parameters:
+        - name: x-shopify-hmac-sha256
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: x-shopify-topic
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Webhook ingested
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
