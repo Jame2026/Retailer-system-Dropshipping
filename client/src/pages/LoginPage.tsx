@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Card } from '../components/common/Card.js';
 import { CredentialsStage } from '../components/auth/CredentialsStage.js';
 import { OtpStage } from '../components/auth/OtpStage.js';
@@ -25,8 +25,13 @@ const STAGE_SUBTITLE: Record<Stage, string> = {
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { setSession } = useAuth();
   const { showToast } = useNotification();
+
+  // Handed over from the simple admin login (email + where to go afterwards).
+  const handoff = (location.state ?? {}) as { from?: string; email?: string };
+  const redirectTo = handoff.from || '/admin';
 
   const [stage, setStage] = useState<Stage>('credentials');
   const [otpSession, setOtpSession] = useState('');
@@ -42,7 +47,7 @@ export const LoginPage: React.FC = () => {
   const completeLogin = (token: string, user: AdminProfile) => {
     setSession(user.email, token, user);
     showToast('success', 'Welcome back', `Signed in as ${user.name}`);
-    navigate('/admin', { replace: true });
+    navigate(redirectTo, { replace: true });
   };
 
   const handleCredentials = async (email: string, password: string) => {
@@ -135,7 +140,7 @@ export const LoginPage: React.FC = () => {
             <CredentialsStage
               loading={loading}
               error={error}
-              defaultEmail="admin@retailer-system.com"
+              defaultEmail={handoff.email || 'admin@retailer-system.com'}
               onSubmit={handleCredentials}
             />
           )}
@@ -156,6 +161,12 @@ export const LoginPage: React.FC = () => {
 
         <p className="text-center text-[11px] text-slate-600">
           Rate-limited &amp; monitored session · OTP codes rotate every 30 seconds
+        </p>
+        <p className="text-center text-[11px] text-slate-500">
+          First time here?{' '}
+          <Link className="font-semibold text-teal-600 hover:text-teal-700" to="/admin/login">
+            Create an admin account
+          </Link>
         </p>
       </div>
     </div>

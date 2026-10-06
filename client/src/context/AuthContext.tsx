@@ -100,9 +100,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       if (payload?.status === 'otp_required' || payload?.status === '2fa_setup_required') {
-        throw new Error(
-          'Two-factor authentication is on for this account — sign in from the Login page to enter your authenticator code.'
-        );
+        // 2FA step can't be completed by this simple form — let the caller hand
+        // off to the full OTP page instead of showing a dead-end error.
+        const challenge = new Error(
+          payload.status === 'otp_required'
+            ? 'This account is protected by two-factor authentication.'
+            : 'This account needs two-factor setup before its first sign-in.'
+        ) as Error & { code: string };
+        challenge.code = payload.status;
+        throw challenge;
       }
       throw new Error(payload?.error || 'Authentication failed against database');
     } catch (err: any) {

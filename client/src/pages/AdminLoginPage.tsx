@@ -31,6 +31,12 @@ export const AdminLoginPage: React.FC = () => {
       showToast('success', 'Database Login Successful', `Welcome, ${loggedUser.name}! Connected to Supabase.`);
       navigate(from, { replace: true });
     } catch (err: any) {
+      if (err?.code === 'otp_required' || err?.code === '2fa_setup_required') {
+        // Continue on the full sign-in page (authenticator code / first-time setup).
+        showToast('info', 'Two-factor step required', 'Finish signing in on the secure login page.');
+        navigate('/login', { state: { from, email } });
+        return;
+      }
       setErrorMessage(err.message || 'Authentication error from database');
       showToast('error', 'Login Failed', err.message || 'Invalid credentials in database');
     } finally {
