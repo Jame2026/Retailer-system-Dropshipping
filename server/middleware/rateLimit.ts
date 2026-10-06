@@ -7,7 +7,7 @@
  * its window changes.
  */
 import { Request, Response, NextFunction, RequestHandler } from 'express';
-import { rateLimit } from 'express-rate-limit';
+import { rateLimit, ipKeyGenerator } from 'express-rate-limit';
 import { settingsService, AppSettings } from '../services/settings.service.js';
 
 interface LimitConfig {
@@ -31,7 +31,8 @@ function buildLimiter(name: string, config: LimitConfig, opts: { skipSuccessful:
     legacyHeaders: false,
     skipSuccessfulRequests: opts.skipSuccessful,
     keyGenerator: (req: Request) => {
-      const ip = req.ip || req.socket.remoteAddress || 'unknown';
+      // ipKeyGenerator keeps IPv6 clients bucketed by subnet (express-rate-limit v8 validation).
+      const ip = ipKeyGenerator(req.ip || req.socket.remoteAddress || 'unknown');
       const suffix = opts.keySuffix ? opts.keySuffix(req) : '';
       return `${ip}${suffix}`;
     },
