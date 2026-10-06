@@ -22,18 +22,18 @@ export const StatsCard: React.FC<StatsCardProps> = ({
     <Card hoverEffect className="relative overflow-hidden group">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{title}</p>
-          <h3 className="text-2xl font-black text-white mt-1 tracking-tight">{value}</h3>
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{title}</p>
+          <h3 className="text-2xl font-black text-slate-900 mt-1 tracking-tight">{value}</h3>
           {subtitle && <p className="text-xs text-slate-400 mt-1">{subtitle}</p>}
         </div>
-        <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 text-teal-400 group-hover:scale-110 transition-transform duration-200 shadow-md">
+        <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-teal-600 group-hover:scale-110 transition-transform duration-200 shadow-sm">
           {icon}
         </div>
       </div>
 
       {change && (
         <div className="mt-4 flex items-center gap-1.5 text-xs font-semibold">
-          <span className={isPositive ? 'text-teal-400' : 'text-rose-400'}>
+          <span className={isPositive ? 'text-teal-600' : 'text-rose-600'}>
             {isPositive ? '↑' : '↓'} {change}
           </span>
           <span className="text-slate-400 font-normal">vs previous period</span>

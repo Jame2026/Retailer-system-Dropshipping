@@ -1,3 +1,4 @@
+import './config/env.js';
 import cron from 'node-cron';
 import { processHoldBufferQueue } from './jobs/holdBuffer.worker.js';
 import { runTrackingSyncJob } from './jobs/trackingSync.job.js';

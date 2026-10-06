@@ -25,7 +25,7 @@ const STAGE_SUBTITLE: Record<Stage, string> = {
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { setSession } = useAuth();
   const { showToast } = useNotification();
 
   const [stage, setStage] = useState<Stage>('credentials');
@@ -40,9 +40,9 @@ export const LoginPage: React.FC = () => {
   };
 
   const completeLogin = (token: string, user: AdminProfile) => {
-    login(user.email, token, user);
+    setSession(user.email, token, user);
     showToast('success', 'Welcome back', `Signed in as ${user.name}`);
-    navigate('/', { replace: true });
+    navigate('/admin', { replace: true });
   };
 
   const handleCredentials = async (email: string, password: string) => {

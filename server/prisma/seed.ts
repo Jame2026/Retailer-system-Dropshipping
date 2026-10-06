@@ -1,11 +1,70 @@
 import { PrismaClient, SupplierType, OrderStatus } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Starting database seeding...');
 
-  // 1. Seed SKU Mappings
+  // 1. Seed Dynamic Admin Users in Supabase PostgreSQL
+  const defaultAdminPass = bcrypt.hashSync('admin123', 10);
+  const operatorPassHash = bcrypt.hashSync('operator123', 10);
+  const supportPassHash = bcrypt.hashSync('support123', 10);
+
+  // Primary Superadmin: battambangprogrammer@gmail.com
+  const primaryAdmin = await (prisma as any).adminUser.upsert({
+    where: { email: 'battambangprogrammer@gmail.com' },
+    update: { role: 'superadmin', isActive: true },
+    create: {
+      email: 'battambangprogrammer@gmail.com',
+      passwordHash: defaultAdminPass,
+      name: 'James Admin',
+      role: 'superadmin',
+      isActive: true,
+    },
+  });
+
+  // Secondary dev admin accounts
+  const superAdmin = await (prisma as any).adminUser.upsert({
+    where: { email: 'admin@retailer-system.com' },
+    update: { passwordHash: defaultAdminPass, role: 'superadmin', isActive: true },
+    create: {
+      email: 'admin@retailer-system.com',
+      passwordHash: defaultAdminPass,
+      name: 'Lead Superadmin',
+      role: 'superadmin',
+      isActive: true,
+    },
+  });
+
+  const operatorUser = await (prisma as any).adminUser.upsert({
+    where: { email: 'operator@retailer-system.com' },
+    update: { passwordHash: operatorPassHash, role: 'operator', isActive: true },
+    create: {
+      email: 'operator@retailer-system.com',
+      passwordHash: operatorPassHash,
+      name: 'Fulfillment Operator',
+      role: 'operator',
+      isActive: true,
+    },
+  });
+
+  const supportUser = await (prisma as any).adminUser.upsert({
+    where: { email: 'support@retailer-system.com' },
+    update: { passwordHash: supportPassHash, role: 'support', isActive: true },
+    create: {
+      email: 'support@retailer-system.com',
+      passwordHash: supportPassHash,
+      name: 'Support Specialist',
+      role: 'support',
+      isActive: true,
+    },
+  });
+
+  console.log(`- Seeded Primary Superadmin in Supabase: ${primaryAdmin.email} (Role: ${primaryAdmin.role})`);
+  console.log(`- Seeded Other Admins in Supabase: ${superAdmin.email}, ${operatorUser.email}, ${supportUser.email}`);
+
+  // 2. Seed SKU Mappings
   const mapping1 = await prisma.skuMapping.upsert({
     where: { storeSku: 'RET-WATCH-001-SLV' },
     update: {},
@@ -54,7 +113,7 @@ async function main() {
     },
   });
 
-  // 2. Seed Test Orders
+  // 3. Seed Test Orders
   const sampleOrder = await prisma.order.upsert({
     where: { shopifyOrderId: 'gid://shopify/Order/9900112233' },
     update: {},

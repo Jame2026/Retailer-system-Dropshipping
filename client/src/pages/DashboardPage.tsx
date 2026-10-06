@@ -9,12 +9,9 @@ import { ManualRetryModal } from '../components/modules/orders/ManualRetryModal.
 import { Order } from '../types/order.types.js';
 import {
   DollarSign,
-  ShoppingCart,
   Clock,
   Truck,
-  TrendingUp,
   AlertTriangle,
-  Layers,
 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { Button } from '../components/common/Button.js';
@@ -52,7 +49,7 @@ export const DashboardPage: React.FC = () => {
       onSyncAll={handleSyncCarriers}
       isSyncing={isSyncing}
       action={
-        <NavLink to="/orders">
+        <NavLink to="/admin/orders">
           <Button variant="primary" size="sm">
             View All Orders Queue
           </Button>
@@ -78,7 +75,7 @@ export const DashboardPage: React.FC = () => {
           value={heldOrders.length}
           change="0.0%"
           isPositive={true}
-          icon={<Clock className="w-5 h-5 text-amber-400" />}
+          icon={<Clock className="w-5 h-5 text-amber-600" />}
           subtitle="Awaiting safety release"
         />
 
@@ -87,7 +84,7 @@ export const DashboardPage: React.FC = () => {
           value={dispatchedOrders.length}
           change="8.5%"
           isPositive={true}
-          icon={<Truck className="w-5 h-5 text-purple-400" />}
+          icon={<Truck className="w-5 h-5 text-purple-600" />}
           subtitle="CJ & Zendrop active orders"
         />
 
@@ -96,7 +93,7 @@ export const DashboardPage: React.FC = () => {
           value={failedOrders.length}
           change={failedOrders.length > 0 ? 'Action Needed' : '0 issues'}
           isPositive={failedOrders.length === 0}
-          icon={<AlertTriangle className="w-5 h-5 text-rose-400" />}
+          icon={<AlertTriangle className="w-5 h-5 text-rose-600" />}
           subtitle="Billing or address alerts"
         />
       </div>
@@ -105,12 +102,12 @@ export const DashboardPage: React.FC = () => {
       <div className="space-y-3 pt-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h2 className="text-base font-bold text-white">Live Orders Stream</h2>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-mono">
+            <h2 className="text-base font-bold text-slate-900">Live Orders Stream</h2>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-mono font-bold border border-slate-200">
               {orders.length} Active
             </span>
           </div>
-          <NavLink to="/orders" className="text-xs font-semibold text-teal-400 hover:underline">
+          <NavLink to="/admin/orders" className="text-xs font-bold text-teal-700 hover:underline">
             View Full Queue →
           </NavLink>
         </div>

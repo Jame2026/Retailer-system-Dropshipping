@@ -7,7 +7,7 @@ import { useDebounce } from '../hooks/useDebounce.js';
 import { Order } from '../types/order.types.js';
 import { Input } from '../components/common/Input.js';
 import { Button } from '../components/common/Button.js';
-import { Search, Filter, RefreshCw } from 'lucide-react';
+import { Search, RefreshCw } from 'lucide-react';
 
 export const OrdersPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('');
@@ -52,15 +52,15 @@ export const OrdersPage: React.FC = () => {
       }
     >
       {/* Tabs */}
-      <div className="flex items-center gap-1.5 overflow-x-auto border-b border-slate-800 pb-2">
+      <div className="flex items-center gap-1.5 overflow-x-auto border-b border-slate-200 pb-2">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => handleTabChange(tab.id)}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
               activeTab === tab.id
-                ? 'bg-teal-500/10 text-teal-400 border border-teal-500/30 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                ? 'bg-teal-50 text-teal-800 border border-teal-300 shadow-sm font-extrabold'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
             {tab.label}
@@ -77,12 +77,12 @@ export const OrdersPage: React.FC = () => {
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-9 text-xs"
           />
-          <Search className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
         </div>
 
-        <div className="text-xs text-slate-400 font-semibold self-end sm:self-center">
-          Showing <span className="text-white">{orders.length}</span> of{' '}
-          <span className="text-white">{total}</span> orders
+        <div className="text-xs text-slate-500 font-semibold self-end sm:self-center">
+          Showing <span className="text-slate-900 font-bold">{orders.length}</span> of{' '}
+          <span className="text-slate-900 font-bold">{total}</span> orders
         </div>
       </div>
 
@@ -95,7 +95,7 @@ export const OrdersPage: React.FC = () => {
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-4 border-t border-slate-800">
+        <div className="flex items-center justify-between pt-4 border-t border-slate-200">
           <Button
             variant="outline"
             size="sm"
@@ -104,8 +104,8 @@ export const OrdersPage: React.FC = () => {
           >
             Previous
           </Button>
-          <span className="text-xs text-slate-400">
-            Page <strong className="text-white">{page}</strong> of {totalPages}
+          <span className="text-xs text-slate-500">
+            Page <strong className="text-slate-900">{page}</strong> of {totalPages}
           </span>
           <Button
             variant="outline"

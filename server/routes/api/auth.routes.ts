@@ -5,6 +5,7 @@ import {
   accountController,
   settingsController,
 } from '../../controllers/auth/index.js';
+import { AuthController } from '../../controllers/auth.controller.js';
 import { authAdmin } from '../../middleware/authAdmin.js';
 import { loginLimiter, otpLimiter, passwordLimiter } from '../../middleware/rateLimit.js';
 
@@ -14,7 +15,7 @@ const router = Router();
 router.get('/settings', settingsController.getSettings.bind(settingsController));
 router.put('/settings', authAdmin, settingsController.updateSettings.bind(settingsController));
 
-// Login flow
+// Login flow (TOTP aware — steps down to a token once the code verifies)
 router.post('/login', loginLimiter, loginController.login.bind(loginController));
 router.post('/verify-otp', otpLimiter, loginController.verifyOtp.bind(loginController));
 
@@ -32,5 +33,9 @@ router.post(
   passwordLimiter,
   accountController.changePassword.bind(accountController)
 );
+
+// Admin user management (from the mockup UI)
+router.post('/register', loginLimiter, AuthController.register);
+router.get('/users', authAdmin, AuthController.listUsers);
 
 export default router;

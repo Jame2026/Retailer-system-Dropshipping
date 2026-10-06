@@ -8,9 +8,8 @@ import { useNotification } from '../context/NotificationContext.js';
 import { Button } from '../components/common/Button.js';
 import { Dialog } from '../components/common/Dialog.js';
 import { Input } from '../components/common/Input.js';
-import { Select } from '../components/common/Select.js';
 import { SkuMapping } from '../types/catalog.types.js';
-import { Plus, Sparkles, Layers, RefreshCw } from 'lucide-react';
+import { Plus, Sparkles } from 'lucide-react';
 
 export const CatalogPage: React.FC = () => {
   const { showToast } = useNotification();
@@ -79,9 +78,9 @@ export const CatalogPage: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={() => setIsSourcingModalOpen(true)}
-            className="border-teal-500/40 text-teal-300 hover:bg-teal-500/10"
+            className="border-teal-300 text-teal-700 hover:bg-teal-50"
           >
-            <Sparkles className="w-3.5 h-3.5" />
+            <Sparkles className="w-3.5 h-3.5 text-teal-600" />
             1-Click Sourcing
           </Button>
           <Button variant="primary" size="sm" onClick={handleOpenCreateMapping}>
@@ -111,7 +110,7 @@ export const CatalogPage: React.FC = () => {
           description="Define primary Priority 1 (CJ) and backup Priority 2 (Zendrop) fulfillment routes."
           maxWidth="xl"
         >
-          <form onSubmit={handleSaveMapping} className="space-y-4">
+          <form onSubmit={handleSaveMapping} className="space-y-4 text-slate-800">
             <div className="grid grid-cols-2 gap-4">
               <Input
                 label="Shopify Store SKU"
@@ -130,8 +129,8 @@ export const CatalogPage: React.FC = () => {
             </div>
 
             {/* Primary Supplier Box */}
-            <div className="p-4 rounded-xl bg-slate-950/60 border border-teal-500/30 space-y-3">
-              <span className="text-xs font-bold text-teal-400 uppercase tracking-wide">
+            <div className="p-4 rounded-xl bg-teal-50/60 border border-teal-200 space-y-3">
+              <span className="text-xs font-bold text-teal-800 uppercase tracking-wide">
                 Priority 1 — Primary Supplier (CJ Dropshipping)
               </span>
               <div className="grid grid-cols-3 gap-3">
@@ -170,8 +169,8 @@ export const CatalogPage: React.FC = () => {
             </div>
 
             {/* Backup Supplier Box */}
-            <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-3">
-              <span className="text-xs font-bold text-slate-300 uppercase tracking-wide">
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+              <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">
                 Priority 2 — Backup Supplier (Zendrop Fallback)
               </span>
               <div className="grid grid-cols-2 gap-3">
@@ -217,7 +216,7 @@ export const CatalogPage: React.FC = () => {
               />
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
               <Button type="button" variant="ghost" onClick={() => setIsMappingModalOpen(false)}>
                 Cancel
               </Button>
