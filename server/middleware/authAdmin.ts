@@ -26,7 +26,17 @@ export function authAdmin(req: AuthenticatedRequest, res: Response, next: NextFu
   const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = jwt.verify(token, env.JWT_SECRET) as AdminAuthPayload;
+    const decoded = jwt.verify(token, env.JWT_SECRET) as AdminAuthPayload & { purpose?: string };
+
+    // Short-lived OTP-session / 2FA-setup tokens must never work as API
+    // access tokens — only full login tokens (no purpose, or purpose=access).
+    if (decoded.purpose && decoded.purpose !== 'access') {
+      return res.status(401).json({
+        success: false,
+        error: 'Token is not an access token. Please log in again.',
+      });
+    }
+
     req.user = decoded;
     return next();
   } catch (error) {

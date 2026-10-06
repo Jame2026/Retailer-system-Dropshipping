@@ -1,10 +1,11 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { clearCachedProfile } from '../utils/profileCache.js';
 
 export interface AdminUser {
   id: string;
   email: string;
   name: string;
-  role: 'superadmin' | 'operator' | 'support';
+  role: string;
 }
 
 interface AuthContextValue {
@@ -17,49 +18,43 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+const TOKEN_KEY = 'retailer_auth_token';
+const USER_KEY = 'retailer_auth_user';
+
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [token, setToken] = useState<string | null>(localStorage.getItem('retailer_auth_token'));
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem(TOKEN_KEY));
   const [user, setUser] = useState<AdminUser | null>(() => {
-    const saved = localStorage.getItem('retailer_auth_user');
-    return saved
-      ? JSON.parse(saved)
-      : {
-          id: 'admin-1',
-          email: 'admin@retailer-system.com',
-          name: 'Lead Operations',
-          role: 'superadmin',
-        };
+    const saved = localStorage.getItem(USER_KEY);
+    if (!saved) return null;
+    try {
+      return JSON.parse(saved) as AdminUser;
+    } catch {
+      return null;
+    }
   });
 
   const login = (email: string, authToken: string, authUser: AdminUser) => {
     setToken(authToken);
-    setUser(authUser);
-    localStorage.setItem('retailer_auth_token', authToken);
-    localStorage.setItem('retailer_auth_user', JSON.stringify(authUser));
+    setUser({ ...authUser, email: authUser.email || email });
+    localStorage.setItem(TOKEN_KEY, authToken);
+    localStorage.setItem(USER_KEY, JSON.stringify({ ...authUser, email: authUser.email || email }));
   };
 
   const logout = () => {
     setToken(null);
     setUser(null);
-    localStorage.removeItem('retailer_auth_token');
-    localStorage.removeItem('retailer_auth_user');
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+    // Drop the cached profile so a different account can't show stale data.
+    clearCachedProfile();
   };
-
-  useEffect(() => {
-    // If no token exists, provide dev default token
-    if (!token) {
-      const devToken = 'dev_demo_jwt_token_retailer_system';
-      setToken(devToken);
-      localStorage.setItem('retailer_auth_token', devToken);
-    }
-  }, [token]);
 
   return (
     <AuthContext.Provider
       value={{
         user,
         token,
-        isAuthenticated: !!token,
+        isAuthenticated: !!token && !!user,
         login,
         logout,
       }}

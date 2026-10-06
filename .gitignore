@@ -17,6 +17,10 @@ build/
 .env.test.local
 .env.production.local
 
+# Local development database (embedded PostgreSQL)
+.pgdata/
+pg-dev.log
+
 # Logs
 npm-debug.log*
 yarn-debug.log*

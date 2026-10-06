@@ -1,0 +1,57 @@
+import { Response, NextFunction } from 'express';
+import bcrypt from 'bcryptjs';
+import { prisma } from '../../database/client.js';
+import { logger } from '../../utils/logger.js';
+import { changePasswordSchema } from '../../validators/auth.validator.js';
+import { AuthenticatedRequest } from '../../middleware/authAdmin.js';
+import { getCachedProfile, invalidateProfileCache } from '../../services/auth/admin.service.js';
+
+export class AccountController {
+  /** Current session profile (served from a 15s cache — instant for the UI). */
+  async me(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const cached = await getCachedProfile(req.user!.adminId);
+      if (!cached || !cached.isActive) {
+        invalidateProfileCache(req.user!.adminId);
+        return res.status(404).json({ success: false, error: 'Account not found' });
+      }
+
+      const { isActive: _isActive, ...data } = cached;
+      return res.status(200).json({ success: true, data });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /** Change the account password (current password required, rate limited). */
+  async changePassword(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const { currentPassword, newPassword } = changePasswordSchema.parse(req.body);
+
+      const user = await prisma.adminUser.findUnique({ where: { id: req.user!.adminId } });
+      if (!user || !user.isActive) {
+        return res.status(404).json({ success: false, error: 'Account not found' });
+      }
+
+      const currentOk = await bcrypt.compare(currentPassword, user.passwordHash);
+      if (!currentOk) {
+        logger.warn({ email: user.email }, 'Change-password attempt with wrong current password');
+        return res.status(401).json({ success: false, error: 'Current password is incorrect' });
+      }
+
+      const passwordHash = await bcrypt.hash(newPassword, 10);
+      await prisma.adminUser.update({ where: { id: user.id }, data: { passwordHash } });
+      invalidateProfileCache(user.id);
+      logger.info({ email: user.email }, 'Admin password changed');
+
+      return res.status(200).json({
+        success: true,
+        message: 'Password updated. Existing sessions stay valid until they expire.',
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+}
+
+export const accountController = new AccountController();

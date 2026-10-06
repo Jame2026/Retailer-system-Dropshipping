@@ -3,6 +3,14 @@ import { z } from 'zod';
 
 dotenv.config();
 
+const boolFromEnv = (defaultValue: boolean) =>
+  z
+    .string()
+    .optional()
+    .transform((v) =>
+      v === undefined || v === '' ? defaultValue : !['false', '0', 'no', 'off'].includes(v.toLowerCase())
+    );
+
 const envSchema = z.object({
   PORT: z.coerce.number().default(4000),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
@@ -32,6 +40,23 @@ const envSchema = z.object({
   HOLD_BUFFER_HOURS: z.coerce.number().default(6),
   DEFAULT_MARKUP_MULTIPLIER: z.coerce.number().default(2.5),
   DEFAULT_SHIPPING_BUFFER_USD: z.coerce.number().default(3.0),
+
+  // Two-factor authentication (TOTP) defaults.
+  // Runtime overrides live in the AppSetting table (see services/settings.service.ts).
+  OTP_ISSUER: z.string().default('Retailer Dropshipping Admin'),
+  OTP_LENGTH: z.coerce.number().int().min(4).max(8).default(6),
+  OTP_STEP_SECONDS: z.coerce.number().int().min(15).max(120).default(30),
+  OTP_WINDOW_STEPS: z.coerce.number().int().min(0).max(2).default(1),
+  OTP_SESSION_TTL_MINUTES: z.coerce.number().int().min(1).max(30).default(5),
+  AUTH_REQUIRE_OTP: boolFromEnv(true),
+
+  // Rate limiting defaults (also overridable at runtime via AppSetting).
+  RATE_LIMIT_API_WINDOW_SEC: z.coerce.number().int().default(900),
+  RATE_LIMIT_API_MAX: z.coerce.number().int().default(600),
+  RATE_LIMIT_LOGIN_WINDOW_SEC: z.coerce.number().int().default(900),
+  RATE_LIMIT_LOGIN_MAX: z.coerce.number().int().default(8),
+  RATE_LIMIT_OTP_WINDOW_SEC: z.coerce.number().int().default(900),
+  RATE_LIMIT_OTP_MAX: z.coerce.number().int().default(6),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

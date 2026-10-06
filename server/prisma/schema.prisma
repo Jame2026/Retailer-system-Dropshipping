@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum OrderStatus {
@@ -207,6 +208,33 @@ model BillingTransaction {
   updatedAt             DateTime       @updatedAt
 
   @@index([orderId])
+}
+
+model AdminUser {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         String    @default("operator")
+  isActive     Boolean   @default(true)
+
+  // Two-factor authentication (TOTP authenticator app)
+  totpSecret   String?
+  totpEnabled  Boolean   @default(false)
+
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([email])
+}
+
+// Dynamic runtime configuration (OTP rules, rate limits, business toggles).
+// Rows override the defaults read from .env without restarting the server.
+model AppSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
 }
 
 model SourcingRequest {
