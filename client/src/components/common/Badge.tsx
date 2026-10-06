@@ -34,11 +34,11 @@ export const Badge: React.FC<BadgeProps> = ({
   }
 
   const customVariants = {
-    default: 'bg-slate-800 text-slate-300 border-slate-700',
-    success: 'bg-teal-500/10 text-teal-400 border-teal-500/30',
-    warning: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-    error: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
-    info: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
+    default: 'bg-slate-100 text-slate-700 border-slate-200',
+    success: 'bg-teal-500/10 text-teal-600 border-teal-500/30',
+    warning: 'bg-amber-500/10 text-amber-600 border-amber-500/30',
+    error: 'bg-rose-500/10 text-rose-600 border-rose-500/30',
+    info: 'bg-blue-500/10 text-blue-600 border-blue-500/30',
   };
 
   return (

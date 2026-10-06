@@ -51,7 +51,7 @@ export const TwoFactorSetupStage: React.FC<TwoFactorSetupStageProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-950/60 border border-slate-800">
+      <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
         <code className="flex-1 font-mono text-[11px] text-teal-300 break-all select-all">
           {secret}
         </code>

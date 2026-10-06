@@ -48,7 +48,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       aria-label={title}
     >
       <div
-        className="w-full max-w-sm rounded-2xl border border-slate-800 bg-slate-900/95 shadow-2xl p-5 space-y-4 animate-slide-up"
+        className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white shadow-2xl p-5 space-y-4 animate-slide-up"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3">
@@ -63,12 +63,12 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                 style={{ width: 18, height: 18 }}
               />
             </div>
-            <h3 className="text-sm font-bold text-white">{title}</h3>
+            <h3 className="text-sm font-bold text-slate-900">{title}</h3>
           </div>
           <button
             type="button"
             onClick={onCancel}
-            className="text-slate-500 hover:text-slate-300 transition-colors"
+            className="text-slate-500 hover:text-slate-900 transition-colors"
             aria-label="Close"
           >
             <X className="w-4 h-4" />

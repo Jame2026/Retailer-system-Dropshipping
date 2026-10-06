@@ -183,12 +183,12 @@ export const SettingsPage: React.FC = () => {
 
         {/* Dynamic Security Settings (OTP + Rate Limiting) */}
         <Card className="space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-200">
             <div className="flex items-center gap-2.5">
-              <ShieldCheck className="w-5 h-5 text-teal-400" />
-              <h3 className="text-sm font-bold text-white">Security: OTP &amp; Rate Limiting</h3>
+              <ShieldCheck className="w-5 h-5 text-teal-600" />
+              <h3 className="text-sm font-bold text-slate-900">Security: OTP &amp; Rate Limiting</h3>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-teal-500/10 text-teal-400 border border-teal-500/30">
+            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-teal-500/10 text-teal-600 border border-teal-500/30">
               Dynamic
             </span>
           </div>
@@ -197,8 +197,8 @@ export const SettingsPage: React.FC = () => {
             <p className="text-xs text-slate-500 py-4 text-center">Loading security configuration…</p>
           ) : (
             <div className="space-y-3">
-              <label className="flex items-center justify-between p-3 rounded-xl bg-slate-950/60 border border-slate-800 cursor-pointer">
-                <span className="text-xs text-slate-300">
+              <label className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+                <span className="text-xs text-slate-700">
                   Require OTP at login
                   <span className="block text-[10px] text-slate-500">
                     When off, password alone grants access (not recommended).

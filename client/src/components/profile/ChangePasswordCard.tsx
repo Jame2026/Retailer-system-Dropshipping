@@ -37,9 +37,9 @@ export const ChangePasswordCard: React.FC = () => {
 
   return (
     <Card className="space-y-4">
-      <div className="flex items-center gap-2.5 pb-2 border-b border-slate-800">
-        <Lock className="w-5 h-5 text-teal-400" />
-        <h3 className="text-sm font-bold text-white">Change Password</h3>
+      <div className="flex items-center gap-2.5 pb-2 border-b border-slate-200">
+        <Lock className="w-5 h-5 text-teal-600" />
+        <h3 className="text-sm font-bold text-slate-900">Change Password</h3>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3">

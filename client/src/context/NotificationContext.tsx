@@ -48,7 +48,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
                 ? 'bg-rose-950/90 border-rose-500/40 text-rose-200'
                 : toast.type === 'warning'
                 ? 'bg-amber-950/90 border-amber-500/40 text-amber-200'
-                : 'bg-slate-900/90 border-slate-700 text-slate-200'
+                : 'bg-white/95 border-slate-200 text-slate-700'
             }`}
           >
             <div className="flex-1">
