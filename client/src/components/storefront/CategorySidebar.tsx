@@ -8,6 +8,8 @@ export interface CategorySidebarProps {
   selectedBrand: string;
   onSelectBrand: (brand: string) => void;
   onResetFilters: () => void;
+  categoriesList?: Array<{ name: string; count: number }>;
+  brandsList?: Array<{ name: string; count: number }>;
 }
 
 export const CategorySidebar: React.FC<CategorySidebarProps> = ({
@@ -18,24 +20,29 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
   selectedBrand,
   onSelectBrand,
   onResetFilters,
+  categoriesList,
+  brandsList,
 }) => {
-  const categories = [
-    { name: 'All Categories', count: 42 },
-    { name: 'Clothings', count: 14 },
-    { name: 'Footwear', count: 8 },
-    { name: 'Accessories', count: 12 },
-    { name: 'Watches', count: 5 },
-    { name: 'Bags & Packs', count: 3 },
+  const defaultCategories = [
+    { name: 'All Categories', count: 12 },
+    { name: 'Clothings', count: 4 },
+    { name: 'Footwear', count: 2 },
+    { name: 'Accessories', count: 3 },
+    { name: 'Watches', count: 2 },
+    { name: 'Bags & Packs', count: 1 },
   ];
 
-  const brands = [
-    { name: 'All Brands', count: 42 },
-    { name: 'Voisen Prime', count: 12 },
-    { name: 'Nike Fashion', count: 8 },
-    { name: 'Calvin Klein', count: 6 },
-    { name: 'Diesel Urban', count: 4 },
-    { name: 'Tommy Hilfiger', count: 5 },
+  const defaultBrands = [
+    { name: 'All Brands', count: 12 },
+    { name: 'Voisen Prime', count: 3 },
+    { name: 'Nike Fashion', count: 2 },
+    { name: 'Calvin Klein', count: 2 },
+    { name: 'Diesel Urban', count: 2 },
+    { name: 'Tommy Hilfiger', count: 3 },
   ];
+
+  const categories = categoriesList && categoriesList.length > 0 ? categoriesList : defaultCategories;
+  const brands = brandsList && brandsList.length > 0 ? brandsList : defaultBrands;
 
   return (
     <aside className="w-full lg:w-64 space-y-8 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm text-slate-800">

@@ -10,7 +10,14 @@
     "worker": "tsx watch worker.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
+    "prisma:push": "prisma db push",
+    "prisma:studio": "prisma studio",
     "prisma:seed": "tsx prisma/seed.ts",
+    "make:all": "tsx scripts/make.ts all",
+    "make:controller": "tsx scripts/make.ts controller",
+    "make:service": "tsx scripts/make.ts service",
+    "make:route": "tsx scripts/make.ts route",
+    "make": "tsx scripts/make.ts all",
     "test": "tsx --test tests/**/*.test.ts"
   },
   "dependencies": {

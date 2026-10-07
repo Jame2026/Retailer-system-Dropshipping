@@ -1,92 +1,44 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { StoreHeader } from '../../components/storefront/StoreHeader.js';
 import { StoreFooter } from '../../components/storefront/StoreFooter.js';
 import { HeroBanner } from '../../components/storefront/HeroBanner.js';
 import { ProductCard, ProductItem } from '../../components/storefront/ProductCard.js';
 import { CartDrawer } from '../../components/storefront/CartDrawer.js';
+import { catalogService } from '../../services/catalogService.js';
 import { NavLink } from 'react-router-dom';
 import { ArrowRight, ShieldCheck, Truck, Clock, RefreshCw } from 'lucide-react';
 
 export const StorefrontHomePage: React.FC = () => {
-  const popularProducts: ProductItem[] = [
-    {
-      id: 'prod-1',
-      sku: 'RET-WATCH-001-SLV',
-      title: 'Minimalist Stainless Steel Watch - Silver',
-      price: 44.75,
-      originalPrice: 120.0,
-      image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&q=80',
-      tag: 'NEW',
-      category: 'Accessories',
-    },
-    {
-      id: 'prod-2',
-      sku: 'RET-BAG-002-BLK',
-      title: 'Waterproof Travel Crossbody Bag - Black',
-      price: 31.75,
-      originalPrice: 75.0,
-      image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&q=80',
-      tag: 'NEW',
-      category: 'Clothings',
-    },
-    {
-      id: 'prod-3',
-      sku: 'RET-JACKET-003-TAN',
-      title: 'Winter Parka Fleece Hooded Jacket - Camel',
-      price: 128.0,
-      originalPrice: 280.0,
-      image: 'https://images.unsplash.com/photo-1544441893-675973e31985?w=500&q=80',
-      tag: 'SALE',
-      category: 'Clothings',
-    },
-    {
-      id: 'prod-4',
-      sku: 'RET-SHORTS-004-BLU',
-      title: 'Classic Denim Casual Summer Shorts',
-      price: 38.5,
-      originalPrice: 56.0,
-      image: 'https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=500&q=80',
-      category: 'Clothings',
-    },
-    {
-      id: 'prod-5',
-      sku: 'RET-BAG-005-BLU',
-      title: 'Urban Outdoor Daypack Canvas Backpack',
-      price: 64.0,
-      originalPrice: 110.0,
-      image: 'https://images.unsplash.com/photo-1577733966973-d680bffd2e80?w=500&q=80',
-      category: 'Accessories',
-    },
-    {
-      id: 'prod-6',
-      sku: 'RET-LEATHER-006-BRN',
-      title: 'Handcrafted Vintage Bifold Leather Wallet',
-      price: 26.5,
-      originalPrice: 50.0,
-      image: 'https://images.unsplash.com/photo-1627123424574-724758594e93?w=500&q=80',
-      tag: 'HOT',
-      category: 'Accessories',
-    },
-    {
-      id: 'prod-7',
-      sku: 'RET-HAT-007-BLK',
-      title: 'Wide Brim Wool Sun Fedora Hat - Black',
-      price: 29.0,
-      originalPrice: 48.0,
-      image: 'https://images.unsplash.com/photo-1514327605112-b887c0e61c0a?w=500&q=80',
-      category: 'Clothings',
-    },
-    {
-      id: 'prod-8',
-      sku: 'RET-SHOES-008-BLK',
-      title: 'Minimal Slip-on Casual Canvas Loafers',
-      price: 52.0,
-      originalPrice: 85.0,
-      image: 'https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=500&q=80',
-      tag: 'SALE',
-      category: 'Footwear',
-    },
-  ];
+  const [popularProducts, setPopularProducts] = useState<ProductItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchPopular = async () => {
+      try {
+        setLoading(true);
+        const data = await catalogService.getStorefrontProducts({
+          tag: 'Popular',
+          limit: 8,
+        });
+        if (isMounted) {
+          setPopularProducts(data.items || []);
+        }
+      } catch (err) {
+        console.error('Failed to load popular products from server', err);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchPopular();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-white flex flex-col font-['Plus_Jakarta_Sans',sans-serif] text-slate-900">
@@ -148,11 +100,28 @@ export const StorefrontHomePage: React.FC = () => {
             </NavLink>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {popularProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {Array.from({ length: 8 }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm animate-pulse space-y-4"
+                >
+                  <div className="aspect-square bg-slate-200 rounded-xl w-full" />
+                  <div className="h-4 bg-slate-200 rounded w-1/3 mx-auto" />
+                  <div className="h-4 bg-slate-200 rounded w-3/4 mx-auto" />
+                  <div className="h-4 bg-slate-200 rounded w-1/2 mx-auto" />
+                  <div className="h-10 bg-slate-200 rounded-xl w-full" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {popularProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
         </div>
       </main>
 

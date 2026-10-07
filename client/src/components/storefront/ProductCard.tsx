@@ -31,17 +31,86 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'g
     setTimeout(() => setAdded(false), 1500);
   };
 
+  if (viewMode === 'list') {
+    return (
+      <div className="group bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col sm:flex-row items-center gap-5 p-4 text-slate-800">
+        <div className="relative w-full sm:w-44 h-44 rounded-xl overflow-hidden bg-slate-100 shrink-0">
+          {product.tag && (
+            <span
+              className={`absolute top-2.5 left-2.5 z-10 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-md shadow ${
+                product.tag === 'SALE'
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-slate-900 text-white'
+              }`}
+            >
+              {product.tag}
+            </span>
+          )}
+          <img
+            src={product.image}
+            alt={product.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        </div>
+
+        <div className="flex-1 min-w-0 w-full flex flex-col justify-between h-full py-1">
+          <div>
+            <span className="text-[11px] uppercase tracking-widest text-teal-700 font-bold">
+              {product.category}
+            </span>
+            <h4 className="text-base font-bold text-slate-900 mt-1 group-hover:text-teal-600 transition-colors">
+              {product.title}
+            </h4>
+            <p className="text-xs text-slate-500 mt-1 font-mono">SKU: {product.sku}</p>
+          </div>
+
+          <div className="flex items-center justify-between gap-4 mt-4 pt-3 border-t border-slate-100">
+            <div className="flex items-baseline gap-2 font-mono">
+              <span className="text-lg font-black text-slate-900">
+                {formatCurrency(product.price)}
+              </span>
+              {product.originalPrice && product.originalPrice > product.price && (
+                <span className="text-xs text-slate-400 line-through">
+                  {formatCurrency(product.originalPrice)}
+                </span>
+              )}
+            </div>
+
+            <button
+              onClick={handleAdd}
+              className={`py-2 px-5 text-xs font-bold uppercase tracking-wider rounded-xl transition-all duration-200 flex items-center gap-1.5 shadow-sm ${
+                added
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-slate-900 text-white hover:bg-teal-600'
+              }`}
+            >
+              {added ? (
+                <>
+                  <Check className="w-4 h-4 stroke-[3]" /> Added
+                </>
+              ) : (
+                <>
+                  <ShoppingBag className="w-3.5 h-3.5" /> Add to Cart
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="group bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between text-slate-800">
-      {/* Top Image Container */}
-      <div className="relative h-64 sm:h-72 w-full bg-[#f8fafc] flex items-center justify-center p-6 overflow-hidden">
+    <div className="group bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between text-slate-800">
+      {/* Top Image Container with Fixed Uniform Aspect Ratio */}
+      <div className="relative aspect-square w-full bg-slate-100 overflow-hidden">
         {/* Badges */}
         {product.tag && (
-          <div className="absolute top-3.5 right-3.5 z-10">
+          <div className="absolute top-3 right-3 z-10">
             <span
-              className={`px-3 py-1 text-[11px] font-black uppercase tracking-wider rounded-md shadow-md ${
+              className={`px-2.5 py-1 text-[10px] font-black uppercase tracking-wider rounded-md shadow-sm ${
                 product.tag === 'SALE'
-                  ? 'bg-teal-500 text-slate-950 font-extrabold'
+                  ? 'bg-emerald-600 text-white'
                   : 'bg-slate-900 text-white'
               }`}
             >
@@ -54,59 +123,62 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'g
         <img
           src={product.image}
           alt={product.title}
-          className="max-h-full max-w-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          loading="lazy"
         />
 
-        {/* Floating Quick Action Overlay */}
-        <div className="absolute bottom-3 left-0 right-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-          <button
-            onClick={handleAdd}
-            className="p-2.5 rounded-full bg-slate-900 text-white hover:bg-teal-500 hover:text-slate-950 shadow-lg transition-colors"
-            title="Add to Cart"
-          >
-            <ShoppingBag className="w-4 h-4" />
-          </button>
+        {/* Subtle quick add on hover */}
+        <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
+          <span className="bg-white/90 backdrop-blur-sm text-slate-900 text-[11px] font-bold px-3 py-1.5 rounded-full shadow-md">
+            Quick View
+          </span>
         </div>
       </div>
 
-      {/* Product Details (Clean minimalist style) */}
-      <div className="p-5 flex flex-col items-center text-center flex-1 justify-between gap-3 bg-white">
+      {/* Product Details */}
+      <div className="p-4 sm:p-5 flex flex-col flex-1 justify-between gap-3 bg-white">
         <div>
-          <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">
+          <span className="text-[10px] uppercase tracking-wider text-teal-700 font-bold">
             {product.category}
           </span>
-          <h4 className="text-xs font-bold text-slate-900 mt-1 uppercase tracking-wider line-clamp-1 group-hover:text-teal-600 transition-colors">
+          <h4
+            className="text-xs sm:text-sm font-bold text-slate-900 mt-1 line-clamp-2 min-h-[2.5rem] leading-snug group-hover:text-teal-600 transition-colors"
+            title={product.title}
+          >
             {product.title}
           </h4>
         </div>
 
         {/* Pricing */}
-        <div className="flex items-center gap-2 font-mono">
+        <div className="flex items-center justify-center gap-2 font-mono">
           {product.originalPrice && product.originalPrice > product.price && (
             <span className="text-xs text-slate-400 line-through">
               {formatCurrency(product.originalPrice)}
             </span>
           )}
-          <span className="text-sm font-black text-slate-900">
+          <span className="text-sm sm:text-base font-black text-slate-900">
             {formatCurrency(product.price)}
           </span>
         </div>
 
-        {/* Add to Cart Border Button (matching screenshot) */}
+        {/* Add to Cart Button */}
         <button
           onClick={handleAdd}
-          className={`w-full py-2.5 px-4 text-xs font-extrabold uppercase tracking-wider border rounded-lg transition-all duration-200 flex items-center justify-center gap-1.5 ${
+          className={`w-full py-2.5 px-4 text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all duration-200 flex items-center justify-center gap-2 border ${
             added
-              ? 'bg-teal-500 border-teal-500 text-slate-950 shadow-md'
-              : 'border-slate-800 text-slate-900 hover:bg-slate-900 hover:text-white'
+              ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm'
+              : 'border-slate-300 text-slate-800 hover:bg-slate-900 hover:border-slate-900 hover:text-white'
           }`}
         >
           {added ? (
             <>
-              <Check className="w-3.5 h-3.5 stroke-[3]" /> Added to Cart
+              <Check className="w-4 h-4 stroke-[3]" /> Added to Cart
             </>
           ) : (
-            'Add to Cart'
+            <>
+              <ShoppingBag className="w-3.5 h-3.5" />
+              Add to Cart
+            </>
           )}
         </button>
       </div>

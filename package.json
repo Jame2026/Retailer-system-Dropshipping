@@ -11,7 +11,14 @@
     "test": "npm test --prefix server",
     "prisma:generate": "npm run prisma:generate --prefix server",
     "prisma:migrate": "npm run prisma:migrate --prefix server",
-    "prisma:seed": "npm run prisma:seed --prefix server"
+    "prisma:push": "npm run prisma:push --prefix server",
+    "prisma:studio": "npm run prisma:studio --prefix server",
+    "prisma:seed": "npm run prisma:seed --prefix server",
+    "make:all": "tsx server/scripts/make.ts all",
+    "make:controller": "tsx server/scripts/make.ts controller",
+    "make:service": "tsx server/scripts/make.ts service",
+    "make:route": "tsx server/scripts/make.ts route",
+    "make": "tsx server/scripts/make.ts all"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

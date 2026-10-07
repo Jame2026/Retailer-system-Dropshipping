@@ -1,16 +1,18 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { StoreHeader } from '../../components/storefront/StoreHeader.js';
 import { StoreFooter } from '../../components/storefront/StoreFooter.js';
 import { CategorySidebar } from '../../components/storefront/CategorySidebar.js';
 import { ProductCard, ProductItem } from '../../components/storefront/ProductCard.js';
 import { CartDrawer } from '../../components/storefront/CartDrawer.js';
-import { LayoutGrid, List } from 'lucide-react';
+import { catalogService, StorefrontMeta } from '../../services/catalogService.js';
+import { LayoutGrid, List, Loader2 } from 'lucide-react';
 
 export const StorefrontCatalogPage: React.FC = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const initialCategory = searchParams.get('category') || '';
   const initialSearch = searchParams.get('search') || '';
+  const initialTag = searchParams.get('tag') || '';
 
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
   const [maxPrice, setMaxPrice] = useState<number>(300);
@@ -19,117 +21,84 @@ export const StorefrontCatalogPage: React.FC = () => {
   const [pageSize, setPageSize] = useState<number>(9);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const allProducts: ProductItem[] = [
-    {
-      id: 'prod-1',
-      sku: 'RET-WATCH-001-SLV',
-      title: 'Minimalist Stainless Steel Watch - Silver',
-      price: 44.75,
-      originalPrice: 120.0,
-      image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&q=80',
-      tag: 'NEW',
-      category: 'Accessories',
-    },
-    {
-      id: 'prod-2',
-      sku: 'RET-BAG-002-BLK',
-      title: 'Waterproof Travel Crossbody Bag - Black',
-      price: 31.75,
-      originalPrice: 75.0,
-      image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&q=80',
-      tag: 'NEW',
-      category: 'Clothings',
-    },
-    {
-      id: 'prod-3',
-      sku: 'RET-JACKET-003-TAN',
-      title: 'Winter Parka Fleece Hooded Jacket - Camel',
-      price: 128.0,
-      originalPrice: 280.0,
-      image: 'https://images.unsplash.com/photo-1544441893-675973e31985?w=500&q=80',
-      tag: 'SALE',
-      category: 'Clothings',
-    },
-    {
-      id: 'prod-4',
-      sku: 'RET-SHORTS-004-BLU',
-      title: 'Classic Denim Casual Summer Shorts',
-      price: 38.5,
-      originalPrice: 56.0,
-      image: 'https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=500&q=80',
-      category: 'Clothings',
-    },
-    {
-      id: 'prod-5',
-      sku: 'RET-BAG-005-BLU',
-      title: 'Urban Outdoor Daypack Canvas Backpack',
-      price: 64.0,
-      originalPrice: 110.0,
-      image: 'https://images.unsplash.com/photo-1577733966973-d680bffd2e80?w=500&q=80',
-      tag: 'NEW',
-      category: 'Bags & Packs',
-    },
-    {
-      id: 'prod-6',
-      sku: 'RET-LEATHER-006-BRN',
-      title: 'Handcrafted Vintage Bifold Leather Wallet',
-      price: 26.5,
-      originalPrice: 50.0,
-      image: 'https://images.unsplash.com/photo-1627123424574-724758594e93?w=500&q=80',
-      tag: 'NEW',
-      category: 'Accessories',
-    },
-    {
-      id: 'prod-7',
-      sku: 'RET-HAT-007-BLK',
-      title: 'Wide Brim Wool Sun Fedora Hat - Black',
-      price: 29.0,
-      originalPrice: 48.0,
-      image: 'https://images.unsplash.com/photo-1514327605112-b887c0e61c0a?w=500&q=80',
-      tag: 'NEW',
-      category: 'Clothings',
-    },
-    {
-      id: 'prod-8',
-      sku: 'RET-SHOES-008-BLK',
-      title: 'Minimal Slip-on Casual Canvas Loafers',
-      price: 52.0,
-      originalPrice: 85.0,
-      image: 'https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=500&q=80',
-      tag: 'SALE',
-      category: 'Footwear',
-    },
-    {
-      id: 'prod-9',
-      sku: 'RET-WATCH-009-GLD',
-      title: 'Executive Chronograph Rose Gold Mesh Watch',
-      price: 58.0,
-      originalPrice: 140.0,
-      image: 'https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=500&q=80',
-      tag: 'NEW',
-      category: 'Watches',
-    },
-  ];
+  const [products, setProducts] = useState<ProductItem[]>([]);
+  const [meta, setMeta] = useState<StorefrontMeta>({
+    categories: [],
+    brands: [],
+    totalProducts: 0,
+  });
+  const [loading, setLoading] = useState<boolean>(true);
 
-  const filteredProducts = useMemo(() => {
-    return allProducts.filter((product) => {
-      if (selectedCategory && product.category.toLowerCase() !== selectedCategory.toLowerCase()) {
-        return false;
+  // Sync category state when URL changes
+  useEffect(() => {
+    setSelectedCategory(searchParams.get('category') || '');
+  }, [searchParams]);
+
+  // Fetch metadata once on mount
+  useEffect(() => {
+    const fetchMeta = async () => {
+      try {
+        const data = await catalogService.getStorefrontMeta();
+        setMeta(data);
+      } catch (err) {
+        console.error('Failed to load catalog metadata', err);
       }
-      if (product.price > maxPrice) {
-        return false;
+    };
+    fetchMeta();
+  }, []);
+
+  // Fetch products dynamically from backend API whenever filters change
+  useEffect(() => {
+    let isMounted = true;
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const search = searchParams.get('search') || initialSearch;
+        const tag = searchParams.get('tag') || initialTag;
+
+        const data = await catalogService.getStorefrontProducts({
+          category: selectedCategory,
+          tag,
+          search,
+          maxPrice,
+          brand: selectedBrand,
+          sortBy,
+          limit: pageSize,
+        });
+
+        if (isMounted) {
+          setProducts(data.items || []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch storefront products from backend', err);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-      if (initialSearch && !product.title.toLowerCase().includes(initialSearch.toLowerCase())) {
-        return false;
-      }
-      return true;
-    });
-  }, [allProducts, selectedCategory, maxPrice, initialSearch]);
+    };
+
+    fetchProducts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedCategory, maxPrice, selectedBrand, sortBy, pageSize, searchParams]);
+
+  const handleSelectCategory = (cat: string) => {
+    setSelectedCategory(cat);
+    if (cat) {
+      setSearchParams({ category: cat });
+    } else {
+      setSearchParams({});
+    }
+  };
 
   const handleResetFilters = () => {
     setSelectedCategory('');
     setMaxPrice(300);
     setSelectedBrand('');
+    setSearchParams({});
   };
 
   return (
@@ -142,7 +111,7 @@ export const StorefrontCatalogPage: React.FC = () => {
           <span>Home</span>
           <span>›</span>
           <span className="text-teal-700">
-            {selectedCategory || 'Catalog Products'}
+            {selectedCategory || searchParams.get('tag') || 'Catalog Products'}
           </span>
         </div>
 
@@ -151,17 +120,19 @@ export const StorefrontCatalogPage: React.FC = () => {
           {/* Left Column: Category & Price Filter Sidebar */}
           <CategorySidebar
             selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
+            onSelectCategory={handleSelectCategory}
             maxPrice={maxPrice}
             onChangeMaxPrice={setMaxPrice}
             selectedBrand={selectedBrand}
             onSelectBrand={setSelectedBrand}
             onResetFilters={handleResetFilters}
+            categoriesList={meta.categories}
+            brandsList={meta.brands}
           />
 
           {/* Right Column: Control Bar + Product Grid */}
           <div className="flex-1 w-full space-y-6">
-            {/* Top Toolbar (matching screenshot 1) */}
+            {/* Top Toolbar */}
             <div className="bg-white p-3.5 rounded-2xl border border-slate-200 flex flex-wrap items-center justify-between gap-4 text-xs font-semibold text-slate-700 shadow-sm">
               <div className="flex items-center gap-2">
                 <button
@@ -187,7 +158,7 @@ export const StorefrontCatalogPage: React.FC = () => {
                   <List className="w-4 h-4" />
                 </button>
                 <span className="text-slate-500 ml-2">
-                  Showing <strong className="text-slate-900">{filteredProducts.length}</strong> items
+                  Showing <strong className="text-slate-900">{products.length}</strong> items
                 </span>
               </div>
 
@@ -197,7 +168,7 @@ export const StorefrontCatalogPage: React.FC = () => {
                   <select
                     value={pageSize}
                     onChange={(e) => setPageSize(Number(e.target.value))}
-                    className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1 text-slate-800"
+                    className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1 text-slate-800 focus:outline-none focus:border-teal-600"
                   >
                     <option value={9}>9</option>
                     <option value={18}>18</option>
@@ -210,30 +181,53 @@ export const StorefrontCatalogPage: React.FC = () => {
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1 text-slate-800"
+                    className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1 text-slate-800 focus:outline-none focus:border-teal-600"
                   >
                     <option value="featured">Featured</option>
                     <option value="price-asc">Price: Low to High</option>
                     <option value="price-desc">Price: High to Low</option>
+                    <option value="newest">Newest Arrivals</option>
                   </select>
                 </div>
               </div>
             </div>
 
-            {/* Product Grid */}
-            {filteredProducts.length === 0 ? (
-              <div className="py-24 text-center bg-white rounded-2xl border border-slate-200 text-slate-500">
+            {/* Product Grid / Loading State */}
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm animate-pulse space-y-4"
+                  >
+                    <div className="aspect-square bg-slate-200 rounded-xl w-full" />
+                    <div className="h-4 bg-slate-200 rounded w-1/3 mx-auto" />
+                    <div className="h-4 bg-slate-200 rounded w-3/4 mx-auto" />
+                    <div className="h-4 bg-slate-200 rounded w-1/2 mx-auto" />
+                    <div className="h-10 bg-slate-200 rounded-xl w-full" />
+                  </div>
+                ))}
+              </div>
+            ) : products.length === 0 ? (
+              <div className="py-24 text-center bg-white rounded-2xl border border-slate-200 text-slate-500 shadow-sm">
                 <p className="text-base font-bold text-slate-800">No products found matching your filters.</p>
+                <p className="text-xs text-slate-400 mt-1">Try adjusting your price range or category filter.</p>
                 <button
                   onClick={handleResetFilters}
-                  className="mt-3 text-xs text-teal-700 font-extrabold uppercase tracking-wider hover:underline"
+                  className="mt-4 px-4 py-2 rounded-xl bg-teal-600 text-white text-xs font-extrabold uppercase tracking-wider hover:bg-teal-500 shadow transition-all"
                 >
                   Reset all filters
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProducts.map((product) => (
+              <div
+                className={
+                  viewMode === 'grid'
+                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
+                    : 'flex flex-col gap-4'
+                }
+              >
+                {products.map((product) => (
                   <ProductCard key={product.id} product={product} viewMode={viewMode} />
                 ))}
               </div>
