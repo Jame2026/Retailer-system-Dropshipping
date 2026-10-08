@@ -222,7 +222,7 @@ model AdminUser {
   email        String    @unique
   passwordHash String
   name         String
-  role         String    @default("operator")
+  role         String    @default("operator") // superadmin, operator, support
   isActive     Boolean   @default(true)
 
   // Two-factor authentication (TOTP authenticator app)
@@ -260,22 +260,6 @@ model SourcingRequest {
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
 }
-
-model AdminUser {
-  id                    String         @id @default(uuid())
-  email                 String         @unique
-  passwordHash          String
-  name                  String
-  role                  String         @default("operator") // superadmin, operator, support
-  isActive              Boolean        @default(true)
-  lastLoginAt           DateTime?
-
-  createdAt             DateTime       @default(now())
-  updatedAt             DateTime       @updatedAt
-
-  @@index([email])
-}
-
 
 model Coupon {
   id        String   @id @default(uuid())
