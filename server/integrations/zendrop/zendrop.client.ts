@@ -33,8 +33,11 @@ export class ZendropClient {
       const mockZendropId = `ZD-ORD-${Math.floor(10000000 + Math.random() * 90000000)}`;
       logger.info({ orderId: payload.order_id, mockZendropId }, '🧪 [Zendrop Sandbox] Created simulated order');
       return {
-        id: mockZendropId,
+        success: true,
+        order_id: mockZendropId,
         status: 'PAID',
+        total: 0,
+        id: mockZendropId,
         fulfillment_status: 'UNFULFILLED',
         tracking_number: null,
       };
@@ -48,8 +51,11 @@ export class ZendropClient {
       logger.warn({ error: error.message }, 'Zendrop API call failed, falling back to sandbox response');
       const mockZendropId = `ZD-ORD-${Math.floor(10000000 + Math.random() * 90000000)}`;
       return {
-        id: mockZendropId,
+        success: true,
+        order_id: mockZendropId,
         status: 'PAID',
+        total: 0,
+        id: mockZendropId,
         fulfillment_status: 'UNFULFILLED',
         tracking_number: null,
       };
