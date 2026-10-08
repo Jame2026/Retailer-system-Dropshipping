@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext.js';
 import { Search, ShoppingBag, User, Menu, X, Zap } from 'lucide-react';
 
@@ -8,6 +8,7 @@ export const StoreHeader: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,6 +25,14 @@ export const StoreHeader: React.FC = () => {
     { label: 'ACCESSORIES', path: '/shop?category=Accessories' },
     { label: 'POPULAR', path: '/shop?tag=Popular' },
   ];
+
+  const isLinkActive = (targetPath: string) => {
+    const currentFullPath = location.pathname + location.search;
+    if (targetPath === '/') {
+      return location.pathname === '/' && !location.search;
+    }
+    return currentFullPath.toLowerCase() === targetPath.toLowerCase();
+  };
 
   return (
     <header className="w-full bg-white border-b border-slate-200 text-slate-900 sticky top-0 z-40 shadow-sm">
@@ -113,21 +122,22 @@ export const StoreHeader: React.FC = () => {
       {/* Horizontal Category Nav */}
       <div className="bg-slate-50 border-t border-slate-200 hidden md:block">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-center gap-8 py-3 text-xs font-bold tracking-widest text-slate-700">
-          {navLinks.map((link) => (
-            <NavLink
-              key={link.label}
-              to={link.path}
-              className={({ isActive }) =>
-                `transition-colors duration-150 relative py-1 ${
-                  isActive
+          {navLinks.map((link) => {
+            const active = isLinkActive(link.path);
+            return (
+              <Link
+                key={link.label}
+                to={link.path}
+                className={`transition-colors duration-150 relative py-1 ${
+                  active
                     ? 'text-teal-700 font-extrabold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-teal-600'
                     : 'text-slate-600 hover:text-teal-600'
-                }`
-              }
-            >
-              {link.label}
-            </NavLink>
-          ))}
+                }`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </div>
       </div>
 
@@ -146,16 +156,21 @@ export const StoreHeader: React.FC = () => {
               <Search className="w-4 h-4" />
             </button>
           </form>
-          {navLinks.map((link) => (
-            <NavLink
-              key={link.label}
-              to={link.path}
-              onClick={() => setMobileMenuOpen(false)}
-              className="block py-2 text-sm font-semibold text-slate-700 hover:text-teal-600"
-            >
-              {link.label}
-            </NavLink>
-          ))}
+          {navLinks.map((link) => {
+            const active = isLinkActive(link.path);
+            return (
+              <Link
+                key={link.label}
+                to={link.path}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`block py-2 text-sm font-semibold transition-colors ${
+                  active ? 'text-teal-700 font-bold' : 'text-slate-700 hover:text-teal-600'
+                }`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </div>
       )}
     </header>

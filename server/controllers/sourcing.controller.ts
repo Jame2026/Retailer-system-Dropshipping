@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { cjSourcing } from '../integrations/cj/cj.sourcing.js';
+import { cjProductService } from '../integrations/cj/cj.product.js';
 import { createSourcingQuerySchema } from '../validators/catalog.validator.js';
 import { prisma } from '../database/client.js';
 
@@ -52,6 +53,52 @@ export class SourcingController {
   }
 
   /**
+   * List live products from CJ Dropshipping API (/product/listV2)
+   */
+  async listCjProducts(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { keyword, categoryId, page, pageSize, minPrice, maxPrice, countryCode } = req.query;
+      const data = await cjProductService.listProducts({
+        keyWord: keyword ? String(keyword) : undefined,
+        categoryId: categoryId ? String(categoryId) : undefined,
+        pageNum: page ? Number(page) : 1,
+        pageSize: pageSize ? Number(pageSize) : 20,
+        minPrice: minPrice ? Number(minPrice) : undefined,
+        maxPrice: maxPrice ? Number(maxPrice) : undefined,
+        countryCode: countryCode ? String(countryCode) : 'US',
+      });
+
+      return res.status(200).json({ success: true, data });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * Get live CJ product categories (/product/getCategory)
+   */
+  async getCjCategories(req: Request, res: Response, next: NextFunction) {
+    try {
+      const data = await cjProductService.getCategories();
+      return res.status(200).json({ success: true, data });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * Get live CJ global warehouse list (/product/globalWarehouseList)
+   */
+  async getCjWarehouses(req: Request, res: Response, next: NextFunction) {
+    try {
+      const data = await cjProductService.getGlobalWarehouses();
+      return res.status(200).json({ success: true, data });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
    * Search CJ supplier catalog for 1-click product importing
    */
   async searchSupplierCatalog(req: Request, res: Response, next: NextFunction) {
@@ -77,12 +124,16 @@ export class SourcingController {
   }
 
   /**
-   * Get CJ product details for 1-click import into store
+   * Get CJ product details for 1-click import into store (/product/query)
    */
   async getSupplierProductDetails(req: Request, res: Response, next: NextFunction) {
     try {
       const pid = String(req.params.pid);
-      const details = await cjSourcing.getProductDetails(pid);
+      const details = await cjProductService.getProductDetail(pid);
+
+      if (!details) {
+        return res.status(404).json({ success: false, error: 'CJ Product not found' });
+      }
 
       return res.status(200).json({
         success: true,
@@ -95,3 +146,4 @@ export class SourcingController {
 }
 
 export const sourcingController = new SourcingController();
+
