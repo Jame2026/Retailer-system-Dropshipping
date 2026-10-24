@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Card } from '../components/common/Card.js';
+import { GoogleLoginButton } from '../components/auth/GoogleLoginButton.js';
 import { CredentialsStage } from '../components/auth/CredentialsStage.js';
 import { OtpStage } from '../components/auth/OtpStage.js';
 import { TwoFactorSetupStage } from '../components/auth/TwoFactorSetupStage.js';
@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext.js';
 import { useNotification } from '../context/NotificationContext.js';
 import { authService, AdminProfile } from '../services/authService.js';
 import { ShieldCheck } from 'lucide-react';
+import { Card } from '../components/common/Card.js';
 
 type Stage = 'credentials' | 'otp' | 'setup';
 
@@ -29,7 +30,6 @@ export const LoginPage: React.FC = () => {
   const { setSession } = useAuth();
   const { showToast } = useNotification();
 
-  // Handed over from the simple admin login (email + where to go afterwards).
   const handoff = (location.state ?? {}) as { from?: string; email?: string };
   const redirectTo = handoff.from || '/admin';
 
@@ -124,7 +124,6 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">
-        {/* Brand */}
         <div className="text-center space-y-2">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-teal-500/10 border border-teal-500/30">
             <ShieldCheck className="w-7 h-7 text-teal-400" />
@@ -137,12 +136,28 @@ export const LoginPage: React.FC = () => {
 
         <Card className="space-y-5">
           {stage === 'credentials' && (
-            <CredentialsStage
-              loading={loading}
-              error={error}
-              defaultEmail={handoff.email || 'admin@retailer-system.com'}
-              onSubmit={handleCredentials}
-            />
+            <>
+              <CredentialsStage
+                loading={loading}
+                error={error}
+                defaultEmail={handoff.email || 'admin@retailer-system.com'}
+                onSubmit={handleCredentials}
+                onForgotPassword={() =>
+                  showToast(
+                    'info',
+                    'Password reset',
+                    'Password resets are handled by an administrator. Contact support to regain access.'
+                  )
+                }
+              />
+              <GoogleLoginButton
+                onSession={completeLogin}
+                onError={(message) => {
+                  setLoading(false);
+                  setError(message);
+                }}
+              />
+            </>
           )}
 
           {stage === 'otp' && <OtpStage loading={loading} error={error} onSubmit={handleOtp} onBack={backToCredentials} />}

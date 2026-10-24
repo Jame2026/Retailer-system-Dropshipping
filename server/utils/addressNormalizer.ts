@@ -100,7 +100,6 @@ export function normalizeAddress(raw: {
   const city = (raw.city || '').trim();
   if (!city) errors.push('City is required');
 
-  // Normalize ZIP to 5 digits (e.g., 90210 or 90210-1234 -> 90210)
   const rawZip = (raw.zip || '').trim();
   const zipMatch = rawZip.match(/\b\d{5}\b/);
   const zipCode = zipMatch ? zipMatch[0] : rawZip;
@@ -108,7 +107,6 @@ export function normalizeAddress(raw: {
     errors.push(`Invalid US 5-digit ZIP code: ${rawZip}`);
   }
 
-  // Normalize State
   let stateCode = (raw.province_code || '').toUpperCase().trim();
   let stateName = (raw.province || '').trim();
 
@@ -121,7 +119,6 @@ export function normalizeAddress(raw: {
     errors.push(`Invalid US state/province: ${stateName || stateCode}`);
   }
 
-  // Normalize Phone (remove characters, ensure fallback)
   const cleanPhone = (raw.phone || '').replace(/[^\d+]/g, '');
   const phone = cleanPhone.length >= 10 ? cleanPhone : '+10000000000';
 

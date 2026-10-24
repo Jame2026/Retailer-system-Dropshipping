@@ -4,9 +4,7 @@ import { manualOrderOverrideSchema } from '../validators/order.validator.js';
 import { prisma } from '../database/client.js';
 
 export class OrderController {
-  /**
-   * Get paginated orders list with status and search filters
-   */
+
   async getOrders(req: Request, res: Response, next: NextFunction) {
     try {
       const { status, search, page, limit } = req.query;
@@ -26,9 +24,6 @@ export class OrderController {
     }
   }
 
-  /**
-   * Get single order inspection details
-   */
   async getOrderById(req: Request, res: Response, next: NextFunction) {
     try {
       const id = String(req.params.id);
@@ -58,9 +53,6 @@ export class OrderController {
     }
   }
 
-  /**
-   * Admin manual override (release now, retry dispatch, switch supplier, cancel)
-   */
   async manualOverride(req: Request, res: Response, next: NextFunction) {
     try {
       const validated = manualOrderOverrideSchema.parse(req.body);
@@ -81,9 +73,6 @@ export class OrderController {
     }
   }
 
-  /**
-   * Manually retry dispatch for a failed order
-   */
   async retryOrder(req: Request, res: Response, next: NextFunction) {
     try {
       const id = String(req.params.id);

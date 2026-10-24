@@ -72,9 +72,7 @@ export const OrderDetailPage: React.FC = () => {
       }
     >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column: Order Items & Delivery Address */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Order Items Table */}
           <Card className="space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
@@ -117,7 +115,6 @@ export const OrderDetailPage: React.FC = () => {
             </div>
           </Card>
 
-          {/* Customer Shipping Address */}
           <Card className="space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
@@ -157,7 +154,6 @@ export const OrderDetailPage: React.FC = () => {
             </div>
           </Card>
 
-          {/* Raw Payload Inspector toggle */}
           <div className="pt-2">
             <button
               onClick={() => setShowRawPayload(!showRawPayload)}
@@ -174,7 +170,6 @@ export const OrderDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Column: Automated Lifecycle Timeline */}
         <div className="space-y-6">
           <Card className="space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
@@ -187,7 +182,6 @@ export const OrderDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Address Editor Modal */}
       <AddressEditorModal
         isOpen={isAddressModalOpen}
         onClose={() => setIsAddressModalOpen(false)}
@@ -206,7 +200,6 @@ export const OrderDetailPage: React.FC = () => {
         }}
       />
 
-      {/* Manual Retry Modal */}
       <ManualRetryModal
         isOpen={isRetryModalOpen}
         onClose={() => setIsRetryModalOpen(false)}

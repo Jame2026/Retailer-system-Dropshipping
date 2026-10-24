@@ -14,7 +14,6 @@ export interface TwoFactorSetupStageProps {
   onRotate: () => void;
 }
 
-/** First-login stage — scan the QR (or copy the key), then confirm a code. */
 export const TwoFactorSetupStage: React.FC<TwoFactorSetupStageProps> = ({
   loading,
   error,

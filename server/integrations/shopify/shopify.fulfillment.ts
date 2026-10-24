@@ -11,15 +11,12 @@ export interface ShopifyFulfillmentPayload {
 }
 
 export class ShopifyFulfillmentService {
-  /**
-   * Create a fulfillment in Shopify using Fulfillment Orders API
-   */
+
   async createFulfillment(shopifyOrderId: string, payload: ShopifyFulfillmentPayload) {
     try {
-      // Clean order ID if it is a GraphQL GID
+
       const numericOrderId = shopifyOrderId.replace(/\D/g, '');
 
-      // 1. Fetch fulfillment orders
       const fulfillmentOrders = await shopifyClient.getFulfillmentOrders(numericOrderId);
 
       if (!fulfillmentOrders || fulfillmentOrders.length === 0) {
@@ -28,7 +25,6 @@ export class ShopifyFulfillmentService {
 
       const openFulfillmentOrder = fulfillmentOrders.find((fo: any) => fo.status === 'open') || fulfillmentOrders[0];
 
-      // 2. Submit fulfillment request
       const response = await axios.post(
         `https://${env.SHOPIFY_SHOP_DOMAIN}/admin/api/${env.SHOPIFY_API_VERSION}/fulfillments.json`,
         {

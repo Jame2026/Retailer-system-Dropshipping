@@ -6,9 +6,7 @@ import { shopifyFulfillment } from '../integrations/shopify/shopify.fulfillment.
 import { logger } from '../utils/logger.js';
 
 export class FulfillmentService {
-  /**
-   * Sync tracking for orders dispatched to suppliers
-   */
+
   async syncPendingFulfillments() {
     logger.info('Running supplier tracking sync cycle...');
 
@@ -37,7 +35,7 @@ export class FulfillmentService {
         }
 
         if (trackingInfo && trackingInfo.trackingNumber) {
-          // 1. Create or update fulfillment record
+
           const fulfillment = await prisma.fulfillment.upsert({
             where: {
               id: order.fulfillments[0]?.id || 'non-existing-id',
@@ -57,7 +55,6 @@ export class FulfillmentService {
             },
           });
 
-          // 2. Push to Shopify if not yet synced
           if (!fulfillment.syncedToShopify) {
             await shopifyFulfillment.createFulfillment(order.shopifyOrderId, {
               trackingNumber: trackingInfo.trackingNumber,
@@ -75,7 +72,6 @@ export class FulfillmentService {
             });
           }
 
-          // 3. Mark order as SHIPPED
           await prisma.order.update({
             where: { id: order.id },
             data: {

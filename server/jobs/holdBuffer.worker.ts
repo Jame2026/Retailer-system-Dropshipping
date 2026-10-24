@@ -8,7 +8,6 @@ export async function processHoldBufferQueue() {
 
   const now = new Date();
 
-  // Find orders whose hold time has expired and are still in PENDING_HOLD
   const eligibleOrders = await prisma.order.findMany({
     where: {
       status: OrderStatus.PENDING_HOLD,
@@ -30,7 +29,7 @@ export async function processHoldBufferQueue() {
 
   for (const order of eligibleOrders) {
     try {
-      // 1. Mark as released / processing
+
       await prisma.order.update({
         where: { id: order.id },
         data: {
@@ -39,7 +38,6 @@ export async function processHoldBufferQueue() {
         },
       });
 
-      // 2. Dispatch to supplier
       await orderService.dispatchOrderToSupplier(order.id);
       releasedCount++;
     } catch (error: any) {

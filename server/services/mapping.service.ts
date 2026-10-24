@@ -15,10 +15,7 @@ export interface ResolvedSupplierSKU {
 }
 
 export class MappingService {
-  /**
-   * Resolves a store SKU to the appropriate supplier variant
-   * Tries Priority 1 (Primary) first; if forceBackup or primary missing, uses Priority 2 (Backup)
-   */
+
   async resolveSku(storeSku: string, useBackup: boolean = false): Promise<ResolvedSupplierSKU | null> {
     const mapping = await prisma.skuMapping.findUnique({
       where: { storeSku, isActive: true },
@@ -56,9 +53,6 @@ export class MappingService {
     return null;
   }
 
-  /**
-   * Upsert a SKU Mapping with auto price calculation
-   */
   async upsertMapping(data: CreateSkuMappingDTO) {
     const calculated = pricingService.calculateSellingPrice({
       baseCost: data.primaryCostPrice,
@@ -112,9 +106,6 @@ export class MappingService {
     return mapping;
   }
 
-  /**
-   * List SKU mappings
-   */
   async listMappings(page = 1, limit = 50) {
     const skip = (page - 1) * limit;
     const [items, total] = await Promise.all([

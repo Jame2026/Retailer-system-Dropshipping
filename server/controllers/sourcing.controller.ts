@@ -5,14 +5,11 @@ import { createSourcingQuerySchema } from '../validators/catalog.validator.js';
 import { prisma } from '../database/client.js';
 
 export class SourcingController {
-  /**
-   * Submit 1-click sourcing request
-   */
+
   async submitSourcingRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const validated = createSourcingQuerySchema.parse(req.body);
 
-      // 1. Record in DB
       const sourcingRecord = await prisma.sourcingRequest.create({
         data: {
           productUrl: validated.productUrl,
@@ -24,7 +21,6 @@ export class SourcingController {
         },
       });
 
-      // 2. Dispatch to CJ Sourcing API if CJ
       let cjResponse = null;
       if (validated.supplierType === 'CJ') {
         try {
@@ -35,7 +31,7 @@ export class SourcingController {
             notes: validated.notes,
           });
         } catch (err: any) {
-          // Logged but do not fail the request
+
         }
       }
 
@@ -52,9 +48,6 @@ export class SourcingController {
     }
   }
 
-  /**
-   * List live products from CJ Dropshipping API (/product/listV2)
-   */
   async listCjProducts(req: Request, res: Response, next: NextFunction) {
     try {
       const { keyword, categoryId, page, pageSize, minPrice, maxPrice, countryCode } = req.query;
@@ -74,9 +67,6 @@ export class SourcingController {
     }
   }
 
-  /**
-   * Get live CJ product categories (/product/getCategory)
-   */
   async getCjCategories(req: Request, res: Response, next: NextFunction) {
     try {
       const data = await cjProductService.getCategories();
@@ -86,9 +76,6 @@ export class SourcingController {
     }
   }
 
-  /**
-   * Get live CJ global warehouse list (/product/globalWarehouseList)
-   */
   async getCjWarehouses(req: Request, res: Response, next: NextFunction) {
     try {
       const data = await cjProductService.getGlobalWarehouses();
@@ -98,9 +85,6 @@ export class SourcingController {
     }
   }
 
-  /**
-   * Search CJ supplier catalog for 1-click product importing
-   */
   async searchSupplierCatalog(req: Request, res: Response, next: NextFunction) {
     try {
       const { keyword, page, pageSize } = req.query;
@@ -123,9 +107,6 @@ export class SourcingController {
     }
   }
 
-  /**
-   * Get CJ product details for 1-click import into store (/product/query)
-   */
   async getSupplierProductDetails(req: Request, res: Response, next: NextFunction) {
     try {
       const pid = String(req.params.pid);
@@ -146,4 +127,3 @@ export class SourcingController {
 }
 
 export const sourcingController = new SourcingController();
-

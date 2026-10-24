@@ -11,22 +11,21 @@ import { loginLimiter, otpLimiter, passwordLimiter } from '../../middleware/rate
 
 const router = Router();
 
-// Dynamic configuration (public read; superadmin write)
 router.get('/settings', settingsController.getSettings.bind(settingsController));
 router.put('/settings', authAdmin, settingsController.updateSettings.bind(settingsController));
 
-// Login flow (TOTP aware — steps down to a token once the code verifies)
 router.post('/login', loginLimiter, loginController.login.bind(loginController));
+router.post('/google', loginLimiter, loginController.googleLogin.bind(loginController));
 router.post('/verify-otp', otpLimiter, loginController.verifyOtp.bind(loginController));
 
-// Two-factor enrolment / recovery
 router.post('/2fa/setup', twoFactorController.setup2fa.bind(twoFactorController));
 router.post('/2fa/enable', otpLimiter, twoFactorController.enable2fa.bind(twoFactorController));
 router.post('/2fa/disable', authAdmin, otpLimiter, twoFactorController.disable2fa.bind(twoFactorController));
 router.post('/2fa/reset', authAdmin, passwordLimiter, twoFactorController.reset2fa.bind(twoFactorController));
 
-// Session & account management
 router.get('/me', authAdmin, accountController.me.bind(accountController));
+router.put('/avatar', authAdmin, accountController.updateAvatar.bind(accountController));
+router.delete('/avatar', authAdmin, accountController.deleteAvatar.bind(accountController));
 router.post(
   '/change-password',
   authAdmin,
@@ -34,7 +33,6 @@ router.post(
   accountController.changePassword.bind(accountController)
 );
 
-// Admin user management (from the mockup UI)
 router.post('/register', loginLimiter, AuthController.register);
 router.get('/users', authAdmin, AuthController.listUsers);
 

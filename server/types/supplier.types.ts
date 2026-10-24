@@ -68,7 +68,7 @@ export interface ZendropOrderResponse {
   status: string;
   total: number;
   error?: string;
-  /** Simulated (sandbox) order extras returned by the mock supplier */
+
   id?: string;
   fulfillment_status?: string;
   tracking_number?: string | null;

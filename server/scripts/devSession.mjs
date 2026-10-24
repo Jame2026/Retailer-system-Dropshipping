@@ -1,12 +1,3 @@
-/**
- * DEV helper — logs in against the local API and prints {"token","user"} so UI
- * checks (scripts/verify-admin-ui.mjs) can seed an authenticated session.
- *
- *   npx tsx scripts/devSession.mjs [email] [password]
- *
- * Uses the account's own TOTP secret from the local database, exactly like an
- * authenticator app would. Dev machines only — never expose the secret.
- */
 import { prisma } from '../database/client.js';
 import { totp } from '../utils/totp.js';
 

@@ -25,7 +25,6 @@ export const PageContainer: React.FC<PageContainerProps> = ({
       <div className="flex-1 ml-64 flex flex-col min-w-0">
         <Header onSyncAll={onSyncAll} isSyncing={isSyncing} />
         <main className="flex-1 p-8 max-w-7xl w-full mx-auto space-y-6">
-          {/* Page Heading Banner */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
             <div>
               <h1 className="text-2xl font-black text-slate-900 tracking-tight">{title}</h1>
@@ -34,7 +33,6 @@ export const PageContainer: React.FC<PageContainerProps> = ({
             {action && <div className="flex items-center gap-3">{action}</div>}
           </div>
 
-          {/* Page Content */}
           {children}
         </main>
       </div>

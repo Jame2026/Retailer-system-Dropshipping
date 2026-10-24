@@ -46,13 +46,11 @@ export const Dialog: React.FC<DialogProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
       <div
         className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
 
-      {/* Modal Dialog Body */}
       <div
         className={`relative w-full ${maxWidths[maxWidth]} bg-white border border-slate-200 rounded-2xl shadow-2xl p-6 z-10 animate-scale-up text-slate-900 max-h-[90vh] overflow-y-auto`}
       >

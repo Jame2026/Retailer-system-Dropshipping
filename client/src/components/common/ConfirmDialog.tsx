@@ -14,10 +14,6 @@ export interface ConfirmDialogProps {
   onCancel: () => void;
 }
 
-/**
- * Centered confirmation modal. Rendered through a portal so parent
- * stacking contexts (blurred headers, sidebars) can't clip it.
- */
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   open,
   title,

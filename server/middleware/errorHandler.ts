@@ -11,7 +11,7 @@ export function errorHandler(
   err: AppError,
   req: Request,
   res: Response,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   next: NextFunction
 ) {
   logger.error(
@@ -27,7 +27,6 @@ export function errorHandler(
     'Unhandled request error occurred'
   );
 
-  // Handle Zod Validation Errors
   if (err instanceof ZodError) {
     return res.status(400).json({
       success: false,

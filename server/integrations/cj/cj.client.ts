@@ -17,9 +17,6 @@ export class CJClient {
     });
   }
 
-  /**
-   * Check if running in sandbox / simulated mode
-   */
   private isSandbox(): boolean {
     return (
       !env.CJ_API_KEY ||
@@ -28,9 +25,6 @@ export class CJClient {
     );
   }
 
-  /**
-   * Get valid CJ Dropshipping Access Token (with auto-refresh)
-   */
   async getAccessToken(): Promise<string> {
     if (this.isSandbox()) {
       return 'sandbox-cj-jwt-token-active';
@@ -70,9 +64,6 @@ export class CJClient {
     }
   }
 
-  /**
-   * Send request to CJ API with automatic sandbox mock fallback
-   */
   async request<T = any>(
     endpoint: string,
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
@@ -106,13 +97,9 @@ export class CJClient {
     }
   }
 
-  /**
-   * Built-in Sandbox Mock Data Provider
-   */
   private getMockResponse(endpoint: string, data?: any, params?: any): any {
     logger.info({ endpoint }, '🧪 [CJ Sandbox Mode] Generating simulated response');
 
-    // 1. Categories
     if (endpoint.includes('/product/getCategory')) {
       return {
         result: true,
@@ -128,7 +115,6 @@ export class CJClient {
       };
     }
 
-    // 2. Global Warehouses
     if (endpoint.includes('/product/globalWarehouseList')) {
       return {
         result: true,
@@ -143,7 +129,6 @@ export class CJClient {
       };
     }
 
-    // 3. Product List V2
     if (endpoint.includes('/product/listV2') || endpoint.includes('/product/list')) {
       const mockList = [
         {
@@ -189,7 +174,6 @@ export class CJClient {
       };
     }
 
-    // 4. Product Query Detail
     if (endpoint.includes('/product/query')) {
       const pid = params?.pid || 'CJ-P-100234';
       return {
@@ -227,7 +211,6 @@ export class CJClient {
       };
     }
 
-    // 5. Order Creation
     if (endpoint.includes('/shopping/order/createOrder')) {
       const randomOrderId = `CJ-ORD-${Math.floor(10000000 + Math.random() * 90000000)}`;
       return {
@@ -243,7 +226,6 @@ export class CJClient {
       };
     }
 
-    // 6. Logistics Tracking
     if (endpoint.includes('/logistic/order/queryByOrderNumber') || endpoint.includes('/logistic/')) {
       const randomTrack = `940011189956${Math.floor(10000000 + Math.random() * 90000000)}`;
       return {
@@ -259,7 +241,6 @@ export class CJClient {
       };
     }
 
-    // Default Fallback
     return {
       result: true,
       code: 200,
@@ -270,4 +251,3 @@ export class CJClient {
 }
 
 export const cjClient = new CJClient();
-

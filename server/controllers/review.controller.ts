@@ -2,9 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { reviewService } from '../services/review.service.js';
 
 export class ReviewController {
-  /**
-   * GET /api/reviews
-   */
+
   async index(req: Request, res: Response, next: NextFunction) {
     try {
       const page = Number(req.query.page) || 1;
@@ -16,9 +14,6 @@ export class ReviewController {
     }
   }
 
-  /**
-   * GET /api/reviews/:id
-   */
   async show(req: Request, res: Response, next: NextFunction) {
     try {
       const id = String(req.params.id);
@@ -32,9 +27,6 @@ export class ReviewController {
     }
   }
 
-  /**
-   * POST /api/reviews
-   */
   async store(req: Request, res: Response, next: NextFunction) {
     try {
       const data = await reviewService.create(req.body);
@@ -44,9 +36,6 @@ export class ReviewController {
     }
   }
 
-  /**
-   * PUT /api/reviews/:id
-   */
   async update(req: Request, res: Response, next: NextFunction) {
     try {
       const id = String(req.params.id);
@@ -57,9 +46,6 @@ export class ReviewController {
     }
   }
 
-  /**
-   * DELETE /api/reviews/:id
-   */
   async destroy(req: Request, res: Response, next: NextFunction) {
     try {
       const id = String(req.params.id);

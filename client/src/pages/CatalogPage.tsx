@@ -90,7 +90,6 @@ export const CatalogPage: React.FC = () => {
         </div>
       }
     >
-      {/* Mappings Table */}
       <SkuMappingTable
         mappings={mappings}
         loading={loading}
@@ -101,7 +100,6 @@ export const CatalogPage: React.FC = () => {
         onDeleteMapping={handleDelete}
       />
 
-      {/* Add / Edit Mapping Modal */}
       {isMappingModalOpen && editingMapping && (
         <Dialog
           isOpen={isMappingModalOpen}
@@ -128,7 +126,6 @@ export const CatalogPage: React.FC = () => {
               />
             </div>
 
-            {/* Primary Supplier Box */}
             <div className="p-4 rounded-xl bg-teal-50/60 border border-teal-200 space-y-3">
               <span className="text-xs font-bold text-teal-800 uppercase tracking-wide">
                 Priority 1 — Primary Supplier (CJ Dropshipping)
@@ -168,7 +165,6 @@ export const CatalogPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Backup Supplier Box */}
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
               <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">
                 Priority 2 — Backup Supplier (Zendrop Fallback)
@@ -194,7 +190,6 @@ export const CatalogPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Pricing Formula */}
             <div className="grid grid-cols-2 gap-4">
               <Input
                 label="Markup Multiplier"
@@ -228,7 +223,6 @@ export const CatalogPage: React.FC = () => {
         </Dialog>
       )}
 
-      {/* 1-Click Sourcing Modal */}
       <SourcingModal
         isOpen={isSourcingModalOpen}
         onClose={() => setIsSourcingModalOpen(false)}

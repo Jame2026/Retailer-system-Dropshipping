@@ -23,7 +23,6 @@ export const CartDrawer: React.FC = () => {
       setIsCheckingOut(true);
       const generatedOrderNum = `#${Math.floor(1000 + Math.random() * 9000)}`;
 
-      // Simulate a Shopify orders/paid webhook event to the backend
       const payload = {
         id: `gid://shopify/Order/${Date.now()}`,
         name: generatedOrderNum,
@@ -66,7 +65,7 @@ export const CartDrawer: React.FC = () => {
         `Order ${generatedOrderNum} entered the 6-hour dropshipping hold buffer.`
       );
     } catch (err: any) {
-      // If server is not reachable or HMAC strict in webhook, show simulated notification
+
       const fallbackOrderNum = `#${Math.floor(1000 + Math.random() * 9000)}`;
       setCreatedOrderNumber(fallbackOrderNum);
       clearCart();
@@ -82,7 +81,6 @@ export const CartDrawer: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
-      {/* Backdrop */}
       <div
         className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
         onClick={() => {
@@ -91,9 +89,7 @@ export const CartDrawer: React.FC = () => {
         }}
       />
 
-      {/* Slide-out Drawer */}
       <div className="relative w-full max-w-md bg-white text-slate-900 h-full shadow-2xl flex flex-col z-10 border-l border-slate-200">
-        {/* Header */}
         <div className="p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
           <div className="flex items-center gap-2.5">
             <ShoppingBag className="w-5 h-5 text-teal-600" />
@@ -112,7 +108,6 @@ export const CartDrawer: React.FC = () => {
           </button>
         </div>
 
-        {/* Content */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
           {createdOrderNumber ? (
             <div className="py-12 text-center space-y-4">
@@ -199,7 +194,6 @@ export const CartDrawer: React.FC = () => {
           )}
         </div>
 
-        {/* Footer & Checkout */}
         {cart.length > 0 && !createdOrderNumber && (
           <div className="p-5 border-t border-slate-200 bg-slate-50 space-y-4">
             <div className="space-y-1.5 text-xs">

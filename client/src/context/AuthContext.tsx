@@ -8,6 +8,7 @@ export interface AdminUser {
   name: string;
   role: 'superadmin' | 'operator' | 'support' | string;
   lastLoginAt?: string;
+  avatarUrl?: string | null;
 }
 
 interface AuthContextValue {
@@ -15,10 +16,10 @@ interface AuthContextValue {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  /** Password login for the simple admin UI (throws when 2FA requires the OTP page). */
+
   login: (email: string, password: string) => Promise<AdminUser>;
   register: (data: { email: string; password: string; name: string; role?: string }) => Promise<AdminUser>;
-  /** Completes the TOTP login flow (called by LoginPage after verify-otp / 2fa setup). */
+
   setSession: (email: string, token: string, user: AdminUser) => void;
   logout: () => void;
 }
@@ -38,8 +39,6 @@ const readStoredUser = (): AdminUser | null => {
   }
 };
 
-/** Both auth backends are mounted: our OTP API nests payloads under `data`,
- *  the mockup API returns them flat — accept either. */
 const unwrap = (body: any): any => body?.data ?? body;
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -47,7 +46,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<AdminUser | null>(() => readStoredUser());
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Validate the stored session against the backend on mount.
   useEffect(() => {
     let cancelled = false;
     const verifySession = async () => {
@@ -75,7 +73,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []);
 
   const setSession = (email: string, authToken: string, authUser: AdminUser) => {
@@ -100,8 +98,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       if (payload?.status === 'otp_required' || payload?.status === '2fa_setup_required') {
-        // 2FA step can't be completed by this simple form — let the caller hand
-        // off to the full OTP page instead of showing a dead-end error.
+
         const challenge = new Error(
           payload.status === 'otp_required'
             ? 'This account is protected by two-factor authentication.'
@@ -140,7 +137,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(null);
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
-    // Drop the cached profile so a different account can't show stale data.
+
     clearCachedProfile();
   };
 

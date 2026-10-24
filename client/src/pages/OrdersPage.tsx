@@ -51,7 +51,6 @@ export const OrdersPage: React.FC = () => {
         </Button>
       }
     >
-      {/* Tabs */}
       <div className="flex items-center gap-1.5 overflow-x-auto border-b border-slate-200 pb-2">
         {tabs.map((tab) => (
           <button
@@ -68,7 +67,6 @@ export const OrdersPage: React.FC = () => {
         ))}
       </div>
 
-      {/* Filter and Search Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="relative w-full sm:w-96">
           <Input
@@ -86,14 +84,12 @@ export const OrdersPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Order Table */}
       <OrderTable
         orders={orders}
         loading={loading}
         onRetryOrder={(order) => setSelectedRetryOrder(order)}
       />
 
-      {/* Pagination Controls */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between pt-4 border-t border-slate-200">
           <Button
@@ -118,7 +114,6 @@ export const OrdersPage: React.FC = () => {
         </div>
       )}
 
-      {/* Manual Retry & Override Modal */}
       {selectedRetryOrder && (
         <ManualRetryModal
           isOpen={!!selectedRetryOrder}

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.js';
 import { useNotification } from '../../context/NotificationContext.js';
 import { authService } from '../../services/authService.js';
-import { readCachedProfile, writeCachedProfile } from '../../utils/profileCache.js';
+import { readCachedProfile, writeCachedProfile, PROFILE_UPDATED_EVENT, getLocalWriteSeq, isStaleProfileResponse } from '../../utils/profileCache.js';
 import {
   ShieldCheck,
   RefreshCw,
@@ -29,6 +29,7 @@ interface ProfileDetails {
   name: string;
   twoFactorEnabled?: boolean;
   lastLoginAt?: string | null;
+  avatarUrl?: string | null;
 }
 
 export const Header: React.FC<HeaderProps> = ({ onSyncAll, isSyncing }) => {
@@ -43,25 +44,26 @@ export const Header: React.FC<HeaderProps> = ({ onSyncAll, isSyncing }) => {
   );
   const [profileError, setProfileError] = useState('');
   const menuRef = useRef<HTMLDivElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
   const lastFetchedAt = useRef(0);
 
-  /**
-   * Refresh the profile in the background (throttled to one call per 10s).
-   * The UI always renders whatever we already have — cached data first,
-   * fresh data when it arrives.
-   */
   const refreshProfile = useCallback(async () => {
     const now = Date.now();
     if (now - lastFetchedAt.current < 10_000) return;
     lastFetchedAt.current = now;
+    const startedSeq = getLocalWriteSeq();
 
     try {
       const me = await authService.me();
+      // A local profile write (e.g. a just-uploaded avatar) happened while this
+      // request was in flight. Its data is newer — don't stomp the navbar with this
+      // stale server response.
+      if (isStaleProfileResponse(startedSeq)) return;
       setProfile(me);
       setProfileError('');
       writeCachedProfile(me);
     } catch (err) {
-      // Keep showing cached data; only surface the error if we have nothing.
+
       setProfile((current) => {
         if (!current) {
           setProfileError(err instanceof Error ? err.message : 'Could not load profile');
@@ -71,20 +73,38 @@ export const Header: React.FC<HeaderProps> = ({ onSyncAll, isSyncing }) => {
     }
   }, []);
 
-  // Warm the cache as soon as the dashboard mounts.
   useEffect(() => {
     refreshProfile();
   }, [refreshProfile]);
 
-  // Re-validate each time the menu opens (still instant from cache).
   useEffect(() => {
     if (menuOpen) refreshProfile();
   }, [menuOpen, refreshProfile]);
 
+  useEffect(() => {
+    const onProfileUpdated = () => {
+      const fresh = readCachedProfile();
+      if (fresh) setProfile(fresh);
+    };
+    window.addEventListener(PROFILE_UPDATED_EVENT, onProfileUpdated);
+    return () => window.removeEventListener(PROFILE_UPDATED_EVENT, onProfileUpdated);
+  }, []);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDocMouseDown = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (menuRef.current?.contains(target) || toggleRef.current?.contains(target)) return;
+      setMenuOpen(false);
+    };
+    document.addEventListener('mousedown', onDocMouseDown);
+    return () => document.removeEventListener('mousedown', onDocMouseDown);
+  }, [menuOpen]);
+
   const signOut = () => {
     logout();
     showToast('info', 'Signed out', 'Your session token was cleared.');
-    navigate('/login', { replace: true });
+    navigate('/', { replace: true });
   };
 
   const askSignOut = () => {
@@ -134,9 +154,9 @@ export const Header: React.FC<HeaderProps> = ({ onSyncAll, isSyncing }) => {
 
         <div className="h-6 w-px bg-slate-200 mx-1"></div>
 
-        {/* Profile trigger */}
         <button
           type="button"
+          ref={toggleRef}
           onClick={() => setMenuOpen((open) => !open)}
           onMouseEnter={refreshProfile}
           onFocus={refreshProfile}
@@ -144,8 +164,16 @@ export const Header: React.FC<HeaderProps> = ({ onSyncAll, isSyncing }) => {
           title="View profile"
           aria-expanded={menuOpen}
         >
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-teal-500 to-indigo-600 flex items-center justify-center text-slate-950 font-bold text-xs shadow-md shadow-teal-500/20">
-            {displayName[0]?.toUpperCase() || 'A'}
+          <div className="w-8 h-8 rounded-xl overflow-hidden bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-xs shadow-sm">
+            {profile?.avatarUrl ? (
+              <img
+                src={profile.avatarUrl}
+                alt={displayName}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              displayName[0]?.toUpperCase() || 'A'
+            )}
           </div>
           <div className="hidden sm:block text-left">
             <p className="text-xs font-semibold text-slate-900">{displayName}</p>
@@ -160,24 +188,22 @@ export const Header: React.FC<HeaderProps> = ({ onSyncAll, isSyncing }) => {
         </button>
       </div>
 
-      {/* Backdrop closes the profile menu */}
-      {menuOpen && (
-        <div
-          className="fixed inset-0 z-20 bg-slate-950/40"
-          onClick={() => setMenuOpen(false)}
-          aria-hidden
-        />
-      )}
-
-      {/* Profile dropdown */}
       {menuOpen && (
         <div
           ref={menuRef}
-          className="absolute right-6 top-16 z-40 w-72 rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-xl shadow-2xl p-4 space-y-3"
+          className="absolute right-6 top-16 z-40 w-72 rounded-2xl border border-slate-200 bg-white shadow-2xl p-4 space-y-3"
         >
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-teal-500 to-indigo-600 flex items-center justify-center text-slate-950 font-bold shadow-md shadow-teal-500/20">
-              {displayName[0]?.toUpperCase() || 'A'}
+            <div className="w-11 h-11 rounded-xl overflow-hidden bg-slate-200 flex items-center justify-center text-slate-600 font-bold shadow-sm">
+              {profile?.avatarUrl ? (
+                <img
+                  src={profile.avatarUrl}
+                  alt={displayName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                displayName[0]?.toUpperCase() || 'A'
+              )}
             </div>
             <div className="min-w-0">
               <p className="text-sm font-bold text-slate-900 truncate">{displayName}</p>

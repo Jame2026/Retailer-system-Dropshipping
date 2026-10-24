@@ -10,7 +10,6 @@ export interface OtpStageProps {
   onBack: () => void;
 }
 
-/** Stage 2 — enter the current authenticator code. */
 export const OtpStage: React.FC<OtpStageProps> = ({ loading, error, onSubmit, onBack }) => {
   const [otp, setOtp] = useState('');
 

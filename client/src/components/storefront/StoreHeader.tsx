@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext.js';
-import { Search, ShoppingBag, User, Menu, X, Zap } from 'lucide-react';
+import { Search, ShoppingBag, User, Menu, X, Zap, LogOut } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext.js';
 
 export const StoreHeader: React.FC = () => {
   const { totalItems, setIsCartOpen } = useCart();
+  const { user, isAuthenticated, logout } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -36,7 +38,6 @@ export const StoreHeader: React.FC = () => {
 
   return (
     <header className="w-full bg-white border-b border-slate-200 text-slate-900 sticky top-0 z-40 shadow-sm">
-      {/* Top Banner (Clean Storefront Info) */}
       <div className="bg-slate-100 px-4 py-1.5 border-b border-slate-200 text-xs flex items-center justify-between text-slate-600">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></span>
@@ -49,9 +50,7 @@ export const StoreHeader: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Header Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between gap-6">
-        {/* Brand Logo */}
         <NavLink to="/" className="flex items-center gap-2.5 shrink-0 group">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-500 to-cyan-400 flex items-center justify-center text-slate-950 font-black shadow-md shadow-teal-500/20 group-hover:scale-105 transition-transform">
             <Zap className="w-6 h-6 fill-current text-white" />
@@ -66,7 +65,6 @@ export const StoreHeader: React.FC = () => {
           </div>
         </NavLink>
 
-        {/* Global Search Bar */}
         <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-xl relative">
           <input
             type="text"
@@ -83,19 +81,52 @@ export const StoreHeader: React.FC = () => {
           </button>
         </form>
 
-        {/* User Account & Cart Button */}
         <div className="flex items-center gap-5 shrink-0">
-          <div className="hidden sm:flex items-center gap-2 text-xs text-slate-700">
-            <div className="p-2 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-              <User className="w-4 h-4" />
-            </div>
-            <div className="text-left leading-tight">
-              <p className="text-[10px] text-slate-400 font-medium">Welcome!</p>
-              <p className="font-bold text-slate-800">Sign In / Register</p>
-            </div>
-          </div>
+          {isAuthenticated && user ? (
+            <>
+              <Link
+                to="/profile"
+                className="hidden sm:flex items-center gap-2 text-xs text-slate-700 hover:text-teal-700 transition-colors"
+                title="View your profile"
+              >
+                <div className="p-2 rounded-full bg-teal-50 text-teal-700 border border-teal-200">
+                  <User className="w-4 h-4" />
+                </div>
+                <div className="text-left leading-tight">
+                  <p className="text-[10px] text-slate-400 font-medium">Welcome back!</p>
+                  <p className="font-bold text-slate-800 truncate max-w-[10rem]">{user.name}</p>
+                </div>
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  logout();
+                  navigate('/');
+                }}
+                title="Sign out"
+                aria-label="Sign out"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-full border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-colors"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                Sign out
+              </button>
+            </>
+          ) : (
+            <Link
+              to="/login"
+              className="hidden sm:flex items-center gap-2 text-xs text-slate-700 hover:text-teal-700 transition-colors"
+              title="Sign in to your account"
+            >
+              <div className="p-2 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                <User className="w-4 h-4" />
+              </div>
+              <div className="text-left leading-tight">
+                <p className="text-[10px] text-slate-400 font-medium">Welcome!</p>
+                <p className="font-bold text-slate-800">Sign In / Register</p>
+              </div>
+            </Link>
+          )}
 
-          {/* Cart Icon with live badge */}
           <button
             onClick={() => setIsCartOpen(true)}
             className="relative p-2.5 rounded-full bg-slate-100 hover:bg-teal-50 text-slate-700 hover:text-teal-700 transition-all border border-slate-300 shadow-sm"
@@ -109,7 +140,6 @@ export const StoreHeader: React.FC = () => {
             )}
           </button>
 
-          {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100"
@@ -119,7 +149,6 @@ export const StoreHeader: React.FC = () => {
         </div>
       </div>
 
-      {/* Horizontal Category Nav */}
       <div className="bg-slate-50 border-t border-slate-200 hidden md:block">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-center gap-8 py-3 text-xs font-bold tracking-widest text-slate-700">
           {navLinks.map((link) => {
@@ -141,7 +170,6 @@ export const StoreHeader: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-white border-b border-slate-200 p-4 space-y-3 shadow-lg">
           <form onSubmit={handleSearch} className="relative mb-3">
@@ -171,6 +199,39 @@ export const StoreHeader: React.FC = () => {
               </Link>
             );
           })}
+
+          <div className="pt-2 border-t border-slate-200">
+            {isAuthenticated && user ? (
+              <>
+                <Link
+                  to="/profile"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-2 text-sm font-semibold text-slate-700 hover:text-teal-600"
+                >
+                  My Profile ({user.name})
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    logout();
+                    navigate('/');
+                  }}
+                  className="w-full text-left py-2 text-sm font-semibold text-rose-600 hover:text-rose-700"
+                >
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block py-2 text-sm font-bold text-teal-700 hover:text-teal-800"
+              >
+                Sign In / Register
+              </Link>
+            )}
+          </div>
         </div>
       )}
     </header>

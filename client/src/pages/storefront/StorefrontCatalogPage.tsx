@@ -29,12 +29,10 @@ export const StorefrontCatalogPage: React.FC = () => {
   });
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Sync category state when URL changes
   useEffect(() => {
     setSelectedCategory(searchParams.get('category') || '');
   }, [searchParams]);
 
-  // Fetch metadata once on mount
   useEffect(() => {
     const fetchMeta = async () => {
       try {
@@ -47,7 +45,6 @@ export const StorefrontCatalogPage: React.FC = () => {
     fetchMeta();
   }, []);
 
-  // Fetch products dynamically from backend API whenever filters change
   useEffect(() => {
     let isMounted = true;
     const fetchProducts = async () => {
@@ -106,7 +103,6 @@ export const StorefrontCatalogPage: React.FC = () => {
       <StoreHeader />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 space-y-6">
-        {/* Breadcrumb matching screenshot 1 */}
         <div className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
           <span>Home</span>
           <span>›</span>
@@ -115,9 +111,7 @@ export const StorefrontCatalogPage: React.FC = () => {
           </span>
         </div>
 
-        {/* Main 2-Column Layout */}
         <div className="flex flex-col lg:flex-row items-start gap-8">
-          {/* Left Column: Category & Price Filter Sidebar */}
           <CategorySidebar
             selectedCategory={selectedCategory}
             onSelectCategory={handleSelectCategory}
@@ -130,9 +124,7 @@ export const StorefrontCatalogPage: React.FC = () => {
             brandsList={meta.brands}
           />
 
-          {/* Right Column: Control Bar + Product Grid */}
           <div className="flex-1 w-full space-y-6">
-            {/* Top Toolbar */}
             <div className="bg-white p-3.5 rounded-2xl border border-slate-200 flex flex-wrap items-center justify-between gap-4 text-xs font-semibold text-slate-700 shadow-sm">
               <div className="flex items-center gap-2">
                 <button
@@ -192,7 +184,6 @@ export const StorefrontCatalogPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Product Grid / Loading State */}
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {Array.from({ length: 6 }).map((_, idx) => (

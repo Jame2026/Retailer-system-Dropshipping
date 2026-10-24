@@ -9,9 +9,7 @@ import { zendropClient } from '../integrations/zendrop/zendrop.client.js';
 import { logger } from '../utils/logger.js';
 
 export class OrderService {
-  /**
-   * Process incoming Shopify Order Webhook (orders/paid or orders/create)
-   */
+
   async handleShopifyOrderPaid(payload: ShopifyOrderWebhookPayload) {
     const shopifyOrderId = String(payload.admin_graphql_api_id || payload.id);
     const existingOrder = await prisma.order.findUnique({
@@ -47,7 +45,6 @@ export class OrderService {
       ? null
       : `Address validation failed: ${normalizedAddress.validationErrors.join('; ')}`;
 
-    // Create order with line items
     const createdOrder = await prisma.order.create({
       data: {
         shopifyOrderId,
@@ -107,9 +104,6 @@ export class OrderService {
     return createdOrder;
   }
 
-  /**
-   * Handle Shopify Order Cancelled webhook
-   */
   async handleShopifyOrderCancelled(shopifyOrderId: string, reason?: string) {
     const order = await prisma.order.findUnique({
       where: { shopifyOrderId },
@@ -141,9 +135,6 @@ export class OrderService {
     return updated;
   }
 
-  /**
-   * Dispatches an order to the supplier (CJ Dropshipping or Zendrop)
-   */
   async dispatchOrderToSupplier(orderId: string, forceSupplier?: SupplierType) {
     const order = await prisma.order.findUnique({
       where: { id: orderId },
@@ -157,7 +148,6 @@ export class OrderService {
       return order;
     }
 
-    // Resolve supplier products
     const resolvedItems: Array<{
       item: (typeof order.items)[0];
       supplier: SupplierType;
@@ -168,7 +158,7 @@ export class OrderService {
     for (const item of order.items) {
       const resolved = await mappingService.resolveSku(item.storeSku, forceSupplier === SupplierType.ZENDROP);
       if (!resolved) {
-        // Unmapped SKU, send to manual review
+
         await prisma.order.update({
           where: { id: order.id },
           data: {
@@ -230,7 +220,7 @@ export class OrderService {
           throw new Error(cjResponse.message || 'CJ API returned failure status');
         }
       } else {
-        // Zendrop fallback
+
         const zendropResponse = await zendropClient.createOrder({
           order_id: order.shopifyOrderNumber,
           shipping_address: {
@@ -269,7 +259,7 @@ export class OrderService {
     } catch (error: any) {
       logger.error({ orderId, error: error.message }, 'Failed to dispatch order to supplier');
       const isBillingFailure = error.message.toLowerCase().includes('balance') || error.message.toLowerCase().includes('payment');
-      
+
       const newStatus = isBillingFailure ? OrderStatus.FAILED_BILLING : OrderStatus.MANUAL_REVIEW;
 
       return await prisma.order.update({
@@ -283,9 +273,6 @@ export class OrderService {
     }
   }
 
-  /**
-   * Manual admin override for orders
-   */
   async manualOverride(orderId: string, action: string, targetSupplier?: SupplierType, notes?: string) {
     const order = await prisma.order.findUnique({ where: { id: orderId } });
     if (!order) throw new Error('Order not found');
@@ -310,9 +297,6 @@ export class OrderService {
     }
   }
 
-  /**
-   * Get orders list with filters
-   */
   async getOrders(params: { status?: OrderStatus; search?: string; page?: number; limit?: number }) {
     const page = params.page || 1;
     const limit = params.limit || CONSTANTS.DEFAULT_PAGE_LIMIT;

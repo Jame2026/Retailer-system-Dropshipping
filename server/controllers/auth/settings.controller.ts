@@ -5,7 +5,7 @@ import { updateSettingsSchema } from '../../validators/auth.validator.js';
 import { AuthenticatedRequest } from '../../middleware/authAdmin.js';
 
 export class SettingsController {
-  /** Public view of the dynamic OTP + rate-limit configuration. */
+
   async getSettings(_req: Request, res: Response, next: NextFunction) {
     try {
       const settings = await settingsService.getAll();
@@ -15,7 +15,6 @@ export class SettingsController {
     }
   }
 
-  /** Superadmin-only runtime update of the dynamic settings. */
   async updateSettings(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       if (req.user!.role !== 'superadmin') {

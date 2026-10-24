@@ -5,7 +5,6 @@ export const loginSchema = z.object({
   password: z.string().min(1, 'Password is required').max(200),
 });
 
-/** 4-8 digit code; exact length is enforced against the configured OTP length. */
 const otpCodeSchema = z.string().regex(/^\d{4,8}$/, 'OTP must be a 4-8 digit code');
 
 export const verifyOtpSchema = z.object({
@@ -42,12 +41,24 @@ export const changePasswordSchema = z
     path: ['newPassword'],
   });
 
-/** Recovery path for a lost authenticator device — password re-verification. */
 export const reset2faSchema = z.object({
   password: z.string().min(1, 'Password is required').max(200),
 });
 
-/** Whitelisted, typed dynamic settings that superadmins may change at runtime. */
+export const updateAvatarSchema = z.object({
+  avatarUrl: z
+    .string()
+    .regex(
+      /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/]+={0,2}$/,
+      'avatarUrl must be a base64 image data URL (png, jpeg, webp or gif)'
+    )
+    .max(700_000, 'Avatar image is too large — the maximum is 500KB'),
+});
+
+export const googleLoginSchema = z.object({
+  credential: z.string().min(1, 'Google credential is required').max(8192),
+});
+
 export const updateSettingsSchema = z
   .object({
     'auth.otpLength': z.number().int().min(4).max(8),

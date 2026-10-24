@@ -52,10 +52,7 @@ export interface CJProductDetail {
 }
 
 export class CJProductService {
-  /**
-   * 1. Get Live Product Categories from CJ
-   * Endpoint: /product/getCategory
-   */
+
   async getCategories(): Promise<CJCategoryItem[]> {
     try {
       logger.info('Fetching live product categories from CJ Dropshipping API...');
@@ -70,10 +67,6 @@ export class CJProductService {
     }
   }
 
-  /**
-   * 2. Get Product List from CJ (listV2)
-   * Endpoint: /product/listV2
-   */
   async listProducts(params: CJProductListParams = {}) {
     try {
       logger.info({ params }, 'Fetching products from CJ Dropshipping /product/listV2');
@@ -88,12 +81,12 @@ export class CJProductService {
       });
 
       if (response?.result && response?.data?.list) {
-        // Transform CJ wholesale products into Storefront Products with automated markup pricing
+
         const transformedItems = response.data.list.map((item: any) => {
           const wholesaleCost = Number(item.sellPrice || item.price || 10);
           const pricing = pricingService.calculateSellingPrice({
             baseCost: wholesaleCost,
-            shippingCost: 3.5, // Standard US ePacket/USPS buffer
+            shippingCost: 3.5,
           });
 
           return {
@@ -127,10 +120,6 @@ export class CJProductService {
     }
   }
 
-  /**
-   * 3. Get Global Warehouse List
-   * Endpoint: /product/globalWarehouseList
-   */
   async getGlobalWarehouses() {
     try {
       logger.info('Fetching global warehouse list from CJ...');
@@ -142,10 +131,6 @@ export class CJProductService {
     }
   }
 
-  /**
-   * 4. Query Single Product Details and Variants
-   * Endpoint: /product/query
-   */
   async getProductDetail(pid: string): Promise<CJProductDetail | null> {
     try {
       logger.info({ pid }, 'Querying product detail from CJ /product/query');

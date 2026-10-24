@@ -53,7 +53,6 @@ export interface Order {
   customerEmail: string;
   customerPhone?: string | null;
 
-  // Address
   shippingName: string;
   shippingAddress1: string;
   shippingAddress2?: string | null;
@@ -64,7 +63,6 @@ export interface Order {
   shippingCountry: string;
   shippingCountryCode: string;
 
-  // Financials
   currency: string;
   totalPrice: number;
   subtotalPrice: number;
@@ -72,14 +70,12 @@ export interface Order {
   totalTax: number;
   financialStatus: string;
 
-  // Timers & Status
   status: OrderStatus;
   holdExpiresAt: string;
   releasedAt?: string | null;
   dispatchedAt?: string | null;
   cancelledAt?: string | null;
 
-  // Supplier info
   supplierType?: SupplierType | null;
   supplierOrderId?: string | null;
   supplierOrderNumber?: string | null;

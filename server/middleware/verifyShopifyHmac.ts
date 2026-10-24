@@ -17,7 +17,6 @@ export function verifyShopifyHmac(req: RequestWithRawBody, res: Response, next: 
     return res.status(401).json({ error: 'Unauthorized: Missing HMAC signature' });
   }
 
-  // Get raw body buffer from request
   const rawBody = req.rawBody || Buffer.from(JSON.stringify(req.body));
 
   const isValid = verifyShopifyWebhookHmac(rawBody, hmacHeader, env.SHOPIFY_WEBHOOK_SECRET);

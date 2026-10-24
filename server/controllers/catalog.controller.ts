@@ -9,9 +9,7 @@ import {
 import { prisma } from '../database/client.js';
 
 export class CatalogController {
-  /**
-   * Get dynamic storefront products with filtering, search, pricing, and pagination
-   */
+
   async getStorefrontProducts(req: Request, res: Response, next: NextFunction) {
     try {
       const {
@@ -44,9 +42,6 @@ export class CatalogController {
     }
   }
 
-  /**
-   * Get single storefront product by ID or SKU
-   */
   async getStorefrontProductById(req: Request, res: Response, next: NextFunction) {
     try {
       const id = String(req.params.id);
@@ -65,9 +60,6 @@ export class CatalogController {
     }
   }
 
-  /**
-   * Get dynamic category counts and brands
-   */
   async getStorefrontMeta(req: Request, res: Response, next: NextFunction) {
     try {
       const meta = await catalogService.getStorefrontMeta();
@@ -77,9 +69,6 @@ export class CatalogController {
     }
   }
 
-  /**
-   * Get all SKU mappings
-   */
   async getMappings(req: Request, res: Response, next: NextFunction) {
     try {
       const { page, limit } = req.query;
@@ -93,9 +82,6 @@ export class CatalogController {
     }
   }
 
-  /**
-   * Upsert a SKU Mapping
-   */
   async saveMapping(req: Request, res: Response, next: NextFunction) {
     try {
       const validated = createSkuMappingSchema.parse(req.body);
@@ -111,9 +97,6 @@ export class CatalogController {
     }
   }
 
-  /**
-   * Delete a SKU mapping
-   */
   async deleteMapping(req: Request, res: Response, next: NextFunction) {
     try {
       const id = String(req.params.id);
@@ -128,9 +111,6 @@ export class CatalogController {
     }
   }
 
-  /**
-   * Test / Preview pricing calculation formula
-   */
   async calculatePricePreview(req: Request, res: Response, next: NextFunction) {
     try {
       const validated = pricingFormulaSchema.parse(req.body);
@@ -152,4 +132,3 @@ export class CatalogController {
 }
 
 export const catalogController = new CatalogController();
-

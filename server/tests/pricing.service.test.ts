@@ -4,8 +4,7 @@ import { pricingService } from '../services/pricing.service.js';
 
 describe('PricingService Unit Tests', () => {
   test('should calculate selling price with default markup and buffer', () => {
-    // Formula: (Base + Shipping) * Multiplier + Buffer
-    // (10 + 5) * 2.5 + 3.0 = 15 * 2.5 + 3 = 37.5 + 3 = 40.5
+
     const result = pricingService.calculateSellingPrice({
       baseCost: 10,
       shippingCost: 5,

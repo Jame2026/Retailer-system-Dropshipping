@@ -9,7 +9,6 @@ export const apiClient = axios.create({
   timeout: 15000,
 });
 
-// Attach JWT token to requests if present in localStorage
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('retailer_auth_token');
   if (token) {
@@ -18,7 +17,6 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// Global response interceptor for unified error responses
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {

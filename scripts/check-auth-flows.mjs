@@ -1,14 +1,3 @@
-/**
- * Headless check of the admin auth flows (no seeded session).
- *
- *   node scripts/check-auth-flows.mjs [origin]
- *
- * 1. Register a brand-new account → expects to land in the app directly
- *    (no extra sign-in step).
- * 2. Log in with that account → expects either direct entry or a hand-off to
- *    the OTP page instead of a dead-end error.
- * Exits 1 when either expectation fails.
- */
 import { spawn } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
@@ -89,10 +78,9 @@ const state = async () =>
 
 const failures = [];
 
-// ── 1. Register → expect direct entry ──────────────────────────────────────
 await send('Page.navigate', { url: `${origin}/admin/login` });
 await sleep(1500);
-await evaluate(`localStorage.clear()`); // fresh visitor
+await evaluate(`localStorage.clear()`);
 await send('Page.navigate', { url: `${origin}/admin/login` });
 await sleep(1500);
 
@@ -137,7 +125,6 @@ if (afterRegister.path === '/admin/login' || !afterRegister.hasToken) {
   failures.push('register did not sign the user in directly');
 }
 
-// ── 2. Log in again after clearing the session ────────────────────────────
 await evaluate(`localStorage.clear()`);
 await send('Page.navigate', { url: `${origin}/admin/login` });
 await sleep(1500);
@@ -163,7 +150,6 @@ await evaluate(`(() => {
 })()`);
 await sleep(4000);
 
-// The login limiter can trip during repeated test runs — back off and retry once.
 const firstTry = await state();
 if (firstTry.path === '/admin/login' && /too many requests/i.test(firstTry.text)) {
   console.log('rate-limited — waiting 35s and retrying once…');
@@ -183,9 +169,6 @@ console.log(`landed: ${afterLogin.path}  token=${afterLogin.hasToken} user=${aft
 console.log(`email field: ${prefilledEmail}`);
 console.log(`page: ${afterLogin.text}`);
 
-// A 2FA step is required for every account, so a successful hand-off to the
-// OTP page (email carried over) counts as a working login — a bounce back to
-// /admin/login with no session is a dead end.
 const handedOff = afterLogin.path === '/login' && prefilledEmail === account.email;
 if (afterLogin.path === '/admin/login' && !afterLogin.hasToken) {
   failures.push('login was a dead end (stayed on /admin/login with no session)');
@@ -212,7 +195,7 @@ async function waitForTarget(portNum) {
       const page = targets.find((t) => t.type === 'page');
       if (page?.webSocketDebuggerUrl) return page.webSocketDebuggerUrl;
     } catch {
-      // chrome not up yet
+
     }
     await sleep(500);
   }

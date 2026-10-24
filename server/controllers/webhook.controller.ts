@@ -4,9 +4,7 @@ import { logger } from '../utils/logger.js';
 import { shopifyOrderWebhookSchema } from '../validators/order.validator.js';
 
 export class WebhookController {
-  /**
-   * Handle incoming Shopify Webhook: orders/paid or orders/create
-   */
+
   async handleShopifyOrder(req: Request, res: Response, next: NextFunction) {
     try {
       const topic = req.headers['x-shopify-topic'] as string;
@@ -25,9 +23,6 @@ export class WebhookController {
     }
   }
 
-  /**
-   * Handle incoming Shopify Webhook: orders/cancelled
-   */
   async handleShopifyCancelled(req: Request, res: Response, next: NextFunction) {
     try {
       const shopifyOrderId = String(req.body.admin_graphql_api_id || req.body.id);
@@ -47,15 +42,11 @@ export class WebhookController {
     }
   }
 
-  /**
-   * Handle CJ Dropshipping real-time package status webhook
-   */
   async handleSupplierWebhook(req: Request, res: Response, next: NextFunction) {
     try {
       const supplierEvent = req.body;
       logger.info({ supplierEvent }, 'Received supplier package status webhook');
 
-      // Immediate 200 acknowledgment
       return res.status(200).json({
         code: 200,
         result: true,

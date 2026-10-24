@@ -3,9 +3,7 @@ import { CJCreateOrderPayload, CJOrderResponse, CJTrackingInfo } from '../../typ
 import { logger } from '../../utils/logger.js';
 
 export class CJOrderService {
-  /**
-   * Create an order in CJ Dropshipping
-   */
+
   async createOrder(payload: CJCreateOrderPayload): Promise<CJOrderResponse> {
     try {
       logger.info({ orderNumber: payload.orderNumber }, 'Submitting order to CJ Dropshipping');
@@ -21,9 +19,6 @@ export class CJOrderService {
     }
   }
 
-  /**
-   * Cancel an order in CJ Dropshipping
-   */
   async cancelOrder(orderId: string): Promise<any> {
     try {
       logger.info({ orderId }, 'Cancelling order in CJ Dropshipping');
@@ -37,9 +32,6 @@ export class CJOrderService {
     }
   }
 
-  /**
-   * Query tracking info / logistics status
-   */
   async getTrackingInfo(orderId: string): Promise<CJTrackingInfo | null> {
     try {
       const response = await cjClient.request('/logistic/order/queryByOrderNumber', 'GET', undefined, {
@@ -62,9 +54,6 @@ export class CJOrderService {
     }
   }
 
-  /**
-   * Calculate real-time freight and shipping cost
-   */
   async calculateFreight(params: {
     startCountryCode?: string;
     endCountryCode: string;

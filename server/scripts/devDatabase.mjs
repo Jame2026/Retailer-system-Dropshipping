@@ -1,12 +1,3 @@
-/**
- * Local development PostgreSQL (embedded, no system install required).
- *
- * Usage: npm run db:start   (from the server/ directory)
- *
- * Creates/starts a Postgres 18 cluster stored in server/.pgdata on port 5432
- * with user/password `postgres`, and ensures the `retailer_dropshipping`
- * database from .env exists. Keeps running until interrupted (Ctrl+C).
- */
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -54,7 +45,7 @@ const shutdown = async () => {
   try {
     await pg.stop();
   } catch {
-    /* already stopped */
+
   }
   process.exit(0);
 };

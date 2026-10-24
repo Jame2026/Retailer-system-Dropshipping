@@ -25,9 +25,6 @@ export class ZendropClient {
     );
   }
 
-  /**
-   * Place an order in Zendrop (fallback supplier)
-   */
   async createOrder(payload: ZendropOrderPayload): Promise<ZendropOrderResponse> {
     if (this.isSandbox()) {
       const mockZendropId = `ZD-ORD-${Math.floor(10000000 + Math.random() * 90000000)}`;
@@ -62,9 +59,6 @@ export class ZendropClient {
     }
   }
 
-  /**
-   * Query tracking info from Zendrop
-   */
   async getTrackingInfo(zendropOrderId: string) {
     if (this.isSandbox()) {
       return {
@@ -88,4 +82,3 @@ export class ZendropClient {
 }
 
 export const zendropClient = new ZendropClient();
-

@@ -5,16 +5,13 @@ import { NotificationProvider } from './context/NotificationContext.js';
 import { CartProvider } from './context/CartContext.js';
 import { ProtectedRoute } from './components/auth/ProtectedRoute.js';
 
-// Storefront pages (development branch)
 import { StorefrontHomePage } from './pages/storefront/StorefrontHomePage.js';
 import { StorefrontCatalogPage } from './pages/storefront/StorefrontCatalogPage.js';
 
-// Admin auth pages: OTP login (this branch) + simple login/register (development branch)
 import { LoginPage } from './pages/LoginPage.js';
 import { AdminLoginPage } from './pages/AdminLoginPage.js';
 import { ProfilePage } from './pages/ProfilePage.js';
 
-// Admin operations pages
 import { DashboardPage } from './pages/DashboardPage.js';
 import { OrdersPage } from './pages/OrdersPage.js';
 import { OrderDetailPage } from './pages/OrderDetailPage.js';
@@ -28,13 +25,13 @@ export const App: React.FC = () => {
     <AuthProvider>
       <NotificationProvider>
         <CartProvider>
-          <BrowserRouter>
+          <BrowserRouter
+            future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+          >
             <Routes>
-              {/* Customer-facing storefront */}
               <Route path="/" element={<StorefrontHomePage />} />
               <Route path="/shop" element={<StorefrontCatalogPage />} />
 
-              {/* Admin auth */}
               <Route path="/login" element={<LoginPage />} />
               <Route path="/admin/login" element={<AdminLoginPage />} />
               <Route
@@ -46,7 +43,6 @@ export const App: React.FC = () => {
                 }
               />
 
-              {/* Preferred admin routes (development branch) */}
               <Route
                 path="/admin"
                 element={
@@ -104,7 +100,6 @@ export const App: React.FC = () => {
                 }
               />
 
-              {/* Backward-compatible direct routes */}
               <Route
                 path="/orders"
                 element={
@@ -154,7 +149,6 @@ export const App: React.FC = () => {
                 }
               />
 
-              {/* Fallback */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </BrowserRouter>

@@ -3,9 +3,7 @@ import { CJSourcingQueryPayload } from '../../types/supplier.types.js';
 import { logger } from '../../utils/logger.js';
 
 export class CJSourcingService {
-  /**
-   * Submit a 1-click product sourcing request to CJ
-   */
+
   async createSourcingQuery(payload: CJSourcingQueryPayload) {
     try {
       logger.info({ productUrl: payload.productUrl }, 'Submitting sourcing request to CJ Dropshipping');
@@ -22,9 +20,6 @@ export class CJSourcingService {
     }
   }
 
-  /**
-   * Query CJ product catalog by keyword or supplier PID
-   */
   async searchProduct(keyword: string, pageNum: number = 1, pageSize: number = 20) {
     try {
       const response = await cjClient.request('/product/list', 'GET', undefined, {
@@ -39,9 +34,6 @@ export class CJSourcingService {
     }
   }
 
-  /**
-   * Get product details and variant SKU list from CJ
-   */
   async getProductDetails(pid: string) {
     try {
       const response = await cjClient.request('/product/query', 'GET', undefined, {

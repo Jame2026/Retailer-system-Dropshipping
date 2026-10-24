@@ -1,12 +1,3 @@
-/**
- * Dynamic runtime settings.
- *
- * Defaults come from .env (see config/env.ts) and any row in the `AppSetting`
- * table overrides them at runtime — no server restart required. Values are
- * cached in-process for a short TTL to keep hot paths off the database.
- *
- * Keys are stored as JSON strings, e.g. `{"rateLimit.login.max": 5}`.
- */
 import { env } from '../config/env.js';
 import { prisma } from '../database/client.js';
 import { logger } from '../utils/logger.js';
@@ -28,7 +19,6 @@ export interface AppSettings {
 export type SettingKey = keyof AppSettings;
 export type SettingValue = number | boolean;
 
-/** Pure factory for the .env-derived defaults (unit-testable without a DB). */
 export function buildDefaultSettings(): AppSettings {
   return {
     'auth.otpLength': env.OTP_LENGTH,
@@ -45,7 +35,6 @@ export function buildDefaultSettings(): AppSettings {
   };
 }
 
-/** Type/range validation for values coming from the API. */
 export function validateSetting(key: string, value: unknown): SettingValue {
   const isBoolKey = key === 'auth.requireOtp';
   const isNumberKey = key in buildDefaultSettings() && !isBoolKey;
@@ -100,7 +89,7 @@ class SettingsService {
         }
       }
     } catch (error: any) {
-      // Never let settings loading take the API down — fall back to defaults.
+
       logger.error({ error: error.message }, 'Failed to load AppSetting overrides');
       merged = defaults;
     }
@@ -114,7 +103,6 @@ class SettingsService {
     return all[key];
   }
 
-  /** Persist overrides (partial merge) and refresh the cache immediately. */
   async update(overrides: Partial<Record<string, unknown>>): Promise<AppSettings> {
     const valid: Record<string, SettingValue> = {};
     for (const [key, value] of Object.entries(overrides)) {

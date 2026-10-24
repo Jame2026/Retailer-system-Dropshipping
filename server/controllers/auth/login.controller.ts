@@ -1,11 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
+import { randomBytes } from 'node:crypto';
 import { prisma } from '../../database/client.js';
 import { env } from '../../config/env.js';
 import { generateTotpSecret, otpauthUri } from '../../utils/totp.js';
 import { logger } from '../../utils/logger.js';
 import { settingsService } from '../../services/settings.service.js';
-import { loginSchema, verifyOtpSchema } from '../../validators/auth.validator.js';
+import { verifyGoogleIdToken } from '../../services/auth/google.service.js';
+import { loginSchema, verifyOtpSchema, googleLoginSchema } from '../../validators/auth.validator.js';
 import {
   toProfile,
   findAdminUser,
@@ -22,15 +24,7 @@ import {
 const GENERIC_LOGIN_ERROR = 'Invalid email or password';
 
 export class LoginController {
-  /**
-   * Step 1 — password verification.
-   *
-   * Responses (all HTTP 200 on correct password):
-   *  - { status: 'authenticated', token }          OTP disabled by settings
-   *  - { status: 'otp_required', otpSession }      TOTP already enrolled
-   *  - { status: '2fa_setup_required', ... }       no TOTP secret yet → enroll
-   * Wrong password / inactive account → 401 (identical message, no user leak).
-   */
+
   async login(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, password } = loginSchema.parse(req.body);
@@ -50,7 +44,6 @@ export class LoginController {
       const settings = await settingsService.getAll();
       const profile = toProfile(user);
 
-      // 2FA disabled by dynamic setting → issue the access token right away.
       if (!settings['auth.requireOtp']) {
         await markLoggedIn(user.id);
         return res.status(200).json({
@@ -59,7 +52,6 @@ export class LoginController {
         });
       }
 
-      // Already enrolled → ask for the current authenticator code.
       if (user.totpEnabled && user.totpSecret) {
         return res.status(200).json({
           success: true,
@@ -71,8 +63,6 @@ export class LoginController {
         });
       }
 
-      // First login → create (or reuse) a pending secret and hand out the
-      // enrolment material so the client can show a QR code.
       let secret = user.totpSecret;
       if (!secret) {
         secret = generateTotpSecret();
@@ -100,7 +90,6 @@ export class LoginController {
     }
   }
 
-  /** Step 2b — verify the authenticator code and complete login. */
   async verifyOtp(req: Request, res: Response, next: NextFunction) {
     try {
       const { otpSession, otp } = verifyOtpSchema.parse(req.body);
@@ -129,6 +118,59 @@ export class LoginController {
       return res.status(200).json({
         success: true,
         data: { token: signAccessToken(profile), user: profile },
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async googleLogin(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { credential } = googleLoginSchema.parse(req.body);
+
+      if (!env.GOOGLE_CLIENT_ID) {
+        return res
+          .status(503)
+          .json({ success: false, error: 'Google sign-in is not configured on this server' });
+      }
+
+      const googleProfile = await verifyGoogleIdToken(credential);
+      if (!googleProfile) {
+        logger.warn('Google sign-in token rejected');
+        return res
+          .status(401)
+          .json({ success: false, error: 'Google sign-in could not be verified' });
+      }
+
+      let user = await findAdminUser(googleProfile.email);
+      if (user && !user.isActive) {
+        return res.status(401).json({ success: false, error: GENERIC_LOGIN_ERROR });
+      }
+
+      if (!user) {
+        user = await prisma.adminUser.create({
+          data: {
+            email: googleProfile.email,
+            name: googleProfile.name,
+            passwordHash: await bcrypt.hash(randomBytes(32).toString('hex'), 10),
+            role: 'operator',
+            avatarUrl: googleProfile.picture ?? null,
+          },
+        });
+        logger.info({ email: googleProfile.email }, 'Provisioned account via Google sign-in');
+      } else if (!user.avatarUrl && googleProfile.picture) {
+        user = await prisma.adminUser.update({
+          where: { id: user.id },
+          data: { avatarUrl: googleProfile.picture },
+        });
+      }
+
+      await markLoggedIn(user.id);
+      const profile = toProfile(user);
+      logger.info({ email: user.email }, 'Google sign-in succeeded');
+      return res.status(200).json({
+        success: true,
+        data: { status: 'authenticated', token: signAccessToken(profile), user: profile },
       });
     } catch (error) {
       return next(error);

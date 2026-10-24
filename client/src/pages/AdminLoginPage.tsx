@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext.js';
 import { useNotification } from '../context/NotificationContext.js';
-import { useNavigate, useLocation, NavLink } from 'react-router-dom';
-import { Shield, ShieldCheck, Key, Lock, Mail, User, ArrowRight, Zap, ShoppingBag, Database, AlertCircle, UserPlus, LogIn, Eye, EyeOff } from 'lucide-react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import {
+  Zap, ShoppingBag, Database, ShieldCheck, LogIn, UserPlus, AlertCircle, User, Mail,
+  Lock, ArrowRight, Eye, EyeOff,
+} from 'lucide-react';
+import { GoogleLoginButton } from '../components/auth/GoogleLoginButton.js';
+import { authService, AdminProfile } from '../services/authService.js';
 
 export const AdminLoginPage: React.FC = () => {
-  const { user, login, register, logout, isAuthenticated } = useAuth();
+  const { user, login, register, logout, isAuthenticated, setSession } = useAuth();
   const { showToast } = useNotification();
   const navigate = useNavigate();
   const location = useLocation();
@@ -32,7 +37,7 @@ export const AdminLoginPage: React.FC = () => {
       navigate(from, { replace: true });
     } catch (err: any) {
       if (err?.code === 'otp_required' || err?.code === '2fa_setup_required') {
-        // Continue on the full sign-in page (authenticator code / first-time setup).
+
         showToast('info', 'Two-factor step required', 'Finish signing in on the secure login page.');
         navigate('/login', { state: { from, email } });
         return;
@@ -72,9 +77,19 @@ export const AdminLoginPage: React.FC = () => {
     setErrorMessage(null);
   };
 
+  const handleGoogleSession = useCallback(
+    (token: string, user: AdminProfile) => {
+      setErrorMessage(null);
+      setIsLoading(true);
+      setSession(user.email, token, user);
+      showToast('success', 'Google Sign-In Successful', `Welcome, ${user.name}!`);
+      navigate(from, { replace: true });
+    },
+    [from, navigate, setSession]
+  );
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col justify-between font-['Plus_Jakarta_Sans',sans-serif] text-slate-900">
-      {/* Top Header */}
       <header className="w-full bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm">
         <NavLink to="/" className="flex items-center gap-2.5 group">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-teal-500 to-cyan-400 flex items-center justify-center text-slate-950 font-black shadow-md shadow-teal-500/20 group-hover:scale-105 transition-transform">
@@ -105,10 +120,8 @@ export const AdminLoginPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Login Box */}
       <main className="flex-1 flex items-center justify-center p-4 sm:p-6 my-8">
         <div className="w-full max-w-lg bg-white rounded-3xl border border-slate-200 shadow-xl p-8 sm:p-10 space-y-6">
-          {/* Title and Icon */}
           <div className="text-center space-y-2">
             <div className="w-14 h-14 rounded-2xl bg-teal-50 border border-teal-200 text-teal-600 flex items-center justify-center mx-auto shadow-sm">
               <ShieldCheck className="w-8 h-8" />
@@ -121,7 +134,6 @@ export const AdminLoginPage: React.FC = () => {
             </p>
           </div>
 
-          {/* Active Session Card if already logged in */}
           {isAuthenticated && user && (
             <div className="p-4 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-between">
               <div>
@@ -145,7 +157,6 @@ export const AdminLoginPage: React.FC = () => {
             </div>
           )}
 
-          {/* Mode Switch Tabs */}
           <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold">
             <button
               type="button"
@@ -179,7 +190,6 @@ export const AdminLoginPage: React.FC = () => {
             </button>
           </div>
 
-          {/* Error Banner */}
           {errorMessage && (
             <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2.5 animate-scale-up">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
@@ -187,7 +197,6 @@ export const AdminLoginPage: React.FC = () => {
             </div>
           )}
 
-          {/* Quick Fill Database Presets */}
           {mode === 'login' && (
             <div className="space-y-2">
               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center">
@@ -239,7 +248,6 @@ export const AdminLoginPage: React.FC = () => {
             </div>
           )}
 
-          {/* Form */}
           <form onSubmit={mode === 'login' ? handleLoginSubmit : handleRegisterSubmit} className="space-y-4">
             {mode === 'register' && (
               <div>
@@ -338,11 +346,20 @@ export const AdminLoginPage: React.FC = () => {
                 </>
               )}
             </button>
+            {mode === 'login' && (
+              <GoogleLoginButton
+                onSession={handleGoogleSession}
+                onError={(message) => {
+                  setIsLoading(false);
+                  setErrorMessage(message);
+                  showToast('error', 'Google Sign-In Failed', message);
+                }}
+              />
+            )}
           </form>
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="py-6 text-center text-xs text-slate-400 border-t border-slate-200 bg-white">
         <p>© 2026 VOISEN Dropshipping Operations Platform • Live Supabase PostgreSQL Database Authentication</p>
       </footer>

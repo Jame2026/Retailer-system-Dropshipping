@@ -10,7 +10,6 @@ import {
 } from '../utils/totp.js';
 import { buildDefaultSettings, validateSetting } from '../services/settings.service.js';
 
-// RFC 6238 test secret: ASCII "12345678901234567890"
 const RFC_SECRET = base32Encode(Buffer.from('12345678901234567890'));
 
 describe('TOTP (RFC 6238)', () => {
@@ -61,7 +60,7 @@ describe('TOTP (RFC 6238)', () => {
     const secret = generateTotpSecret();
     assert.strictEqual(secret.length, 32, '20 bytes => 32 base32 chars');
     assert.match(secret, /^[A-Z2-7]+$/);
-    // A freshly generated secret must verify against its own code.
+
     assert.strictEqual(verifyTotp(secret, totp(secret), { digits: 6 }), true);
   });
 

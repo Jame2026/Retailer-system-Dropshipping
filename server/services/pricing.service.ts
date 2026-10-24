@@ -18,10 +18,7 @@ export interface PricingCalculationResult {
 }
 
 export class PricingService {
-  /**
-   * Calculates Selling Price using the formula:
-   * Selling Price = ((Base Cost + Shipping Cost) * Multiplier) + Buffer
-   */
+
   calculateSellingPrice(input: PricingCalculationInput): PricingCalculationResult {
     const baseCost = Number(input.baseCost) || 0;
     const shippingCost = Number(input.shippingCost) || 0;
@@ -34,8 +31,7 @@ export class PricingService {
 
     const totalCost = baseCost + shippingCost;
     const rawSellingPrice = totalCost * multiplier + buffer;
-    
-    // Round to 2 decimal places (or standard .99 retail charm pricing if preferred)
+
     const sellingPrice = Math.round(rawSellingPrice * 100) / 100;
     const profitMarginUsd = Math.round((sellingPrice - totalCost) * 100) / 100;
     const marginPercent = sellingPrice > 0 ? Math.round((profitMarginUsd / sellingPrice) * 10000) / 100 : 0;
@@ -51,9 +47,6 @@ export class PricingService {
     };
   }
 
-  /**
-   * Round to retail .99 ending
-   */
   toCharmPrice(price: number): number {
     return Math.floor(price) + 0.99;
   }

@@ -4,7 +4,6 @@ import path from 'path';
 const serverRoot = path.resolve(process.cwd(), 'server');
 const effectiveRoot = fs.existsSync(path.join(serverRoot, 'prisma')) ? serverRoot : process.cwd();
 
-// Helper to convert names
 function formatNames(rawName: string) {
   const clean = rawName.replace(/controller|service|model|routes?$/i, '').trim();
   const pascalCase = clean.charAt(0).toUpperCase() + clean.slice(1);
@@ -22,7 +21,6 @@ function formatNames(rawName: string) {
   };
 }
 
-// 1. Generate Service
 export function createService(name: string) {
   const { pascal, camel, plural, kebab } = formatNames(name);
   const targetPath = path.join(effectiveRoot, 'services', `${kebab}.service.ts`);
@@ -110,7 +108,6 @@ export const ${camel}Service = new ${pascal}Service();
   return targetPath;
 }
 
-// 2. Generate Controller
 export function createController(name: string) {
   const { pascal, camel, kebab } = formatNames(name);
   const targetPath = path.join(effectiveRoot, 'controllers', `${kebab}.controller.ts`);
@@ -201,7 +198,6 @@ export const ${camel}Controller = new ${pascal}Controller();
   return targetPath;
 }
 
-// 3. Generate Route
 export function createRoute(name: string) {
   const { pascal, camel, kebab } = formatNames(name);
   const targetPath = path.join(effectiveRoot, 'routes', 'api', `${kebab}.routes.ts`);
@@ -231,7 +227,6 @@ export default router;
   return targetPath;
 }
 
-// 4. Append to schema.prisma if model doesn't exist
 export function appendModelIfMissing(name: string) {
   const { pascal } = formatNames(name);
   const schemaPath = path.join(effectiveRoot, 'prisma', 'schema.prisma');
@@ -249,7 +244,6 @@ export function appendModelIfMissing(name: string) {
   }
 }
 
-// CLI Runner
 const args = process.argv.slice(2);
 const command = args[0];
 const targetName = args[1];

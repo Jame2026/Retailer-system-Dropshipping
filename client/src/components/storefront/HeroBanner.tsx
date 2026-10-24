@@ -5,7 +5,6 @@ import { ArrowRight, Sparkles } from 'lucide-react';
 export const HeroBanner: React.FC = () => {
   return (
     <div className="relative w-full rounded-3xl overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-pink-500 p-8 sm:p-14 text-white shadow-2xl flex flex-col justify-center min-h-[300px]">
-      {/* Decorative Glow Circles */}
       <div className="absolute -right-10 -bottom-10 w-80 h-80 bg-pink-400/30 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute left-1/3 -top-10 w-60 h-60 bg-blue-400/20 rounded-full blur-2xl pointer-events-none"></div>
 

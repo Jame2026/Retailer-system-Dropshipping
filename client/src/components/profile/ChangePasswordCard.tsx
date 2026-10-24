@@ -6,7 +6,6 @@ import { useNotification } from '../../context/NotificationContext.js';
 import { authService } from '../../services/authService.js';
 import { Lock, KeyRound } from 'lucide-react';
 
-/** Change-password form with client-side confirmation + server validation. */
 export const ChangePasswordCard: React.FC = () => {
   const { showToast } = useNotification();
 

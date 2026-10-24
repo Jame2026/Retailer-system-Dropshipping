@@ -8,14 +8,10 @@ import { ShieldCheck, AlertTriangle, RefreshCw } from 'lucide-react';
 
 export interface TwoFactorCardProps {
   enabled: boolean;
-  /** Called after a successful disable/reset so the page can refresh. */
+
   onChanged: () => void | Promise<void>;
 }
 
-/**
- * 2FA management: turn off with a current code, or reset with the account
- * password when the authenticator device is lost.
- */
 export const TwoFactorCard: React.FC<TwoFactorCardProps> = ({ enabled, onChanged }) => {
   const { showToast } = useNotification();
 

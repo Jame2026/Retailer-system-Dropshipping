@@ -3,12 +3,22 @@ import { settingsService } from '../settings.service.js';
 import { verifyTotp } from '../../utils/totp.js';
 import type { AdminProfile } from './token.service.js';
 
-/** Strip a Prisma AdminUser row down to the public profile shape. */
-export function toProfile(user: { id: string; email: string; name: string; role: string }): AdminProfile {
-  return { id: user.id, email: user.email, name: user.name, role: user.role };
+export function toProfile(user: {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  avatarUrl?: string | null;
+}): AdminProfile {
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    avatarUrl: user.avatarUrl ?? null,
+  };
 }
 
-/** Find by email, tolerating case differences. */
 export async function findAdminUser(email: string) {
   const trimmed = email.trim();
   const normalized = trimmed.toLowerCase();
@@ -18,13 +28,11 @@ export async function findAdminUser(email: string) {
   );
 }
 
-/** Fetch by id and confirm the account can still be used. */
 export async function getActiveUser(id: string) {
   const user = await prisma.adminUser.findUnique({ where: { id } });
   return user && user.isActive ? user : null;
 }
 
-/** Verify a TOTP code using the dynamic OTP settings. */
 export async function verifyOtpCode(
   user: { totpSecret: string | null },
   code: string
@@ -38,10 +46,6 @@ export async function verifyOtpCode(
   });
 }
 
-/**
- * Short-lived cache for the profile payload so opening the profile menu is
- * instant even though the database is remote. Invalidated on every write.
- */
 const PROFILE_CACHE_TTL_MS = 15_000;
 const profileCache = new Map<string, { data: Record<string, unknown>; expires: number }>();
 
@@ -74,7 +78,6 @@ export async function getCachedProfile(userId: string): Promise<CachedAdminProfi
   return data;
 }
 
-/** Stamp the login time and drop the stale profile cache entry. */
 export async function markLoggedIn(userId: string): Promise<void> {
   await prisma.adminUser.update({ where: { id: userId }, data: { lastLoginAt: new Date() } });
   invalidateProfileCache(userId);

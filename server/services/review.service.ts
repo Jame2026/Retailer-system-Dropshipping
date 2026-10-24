@@ -9,9 +9,7 @@ export interface UpdateReviewInput {
 }
 
 export class ReviewService {
-  /**
-   * Get all reviews
-   */
+
   async getAll(page = 1, limit = 20) {
     const skip = (page - 1) * limit;
     const model = (prisma as any).review;
@@ -32,25 +30,16 @@ export class ReviewService {
     return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
-  /**
-   * Get single review by ID
-   */
   async getById(id: string) {
     const model = (prisma as any).review;
     return model.findUnique({ where: { id } });
   }
 
-  /**
-   * Create new review
-   */
   async create(data: CreateReviewInput) {
     const model = (prisma as any).review;
     return model.create({ data });
   }
 
-  /**
-   * Update existing review
-   */
   async update(id: string, data: UpdateReviewInput) {
     const model = (prisma as any).review;
     return model.update({
@@ -59,9 +48,6 @@ export class ReviewService {
     });
   }
 
-  /**
-   * Delete review
-   */
   async delete(id: string) {
     const model = (prisma as any).review;
     return model.delete({ where: { id } });

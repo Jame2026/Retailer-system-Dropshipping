@@ -51,8 +51,7 @@ model Order {
   shopifyCreatedAt      DateTime
   customerEmail         String
   customerPhone         String?
-  
-  // Shipping Address
+
   shippingName          String
   shippingAddress1      String
   shippingAddress2      String?
@@ -62,29 +61,25 @@ model Order {
   shippingZip           String
   shippingCountry       String        @default("United States")
   shippingCountryCode   String        @default("US")
-  
-  // Financials
+
   currency              String        @default("USD")
   totalPrice            Float
   subtotalPrice         Float
   totalShipping         Float         @default(0.0)
   totalTax              Float         @default(0.0)
   financialStatus       String        @default("paid")
-  
-  // State Machine & Timers
+
   status                OrderStatus   @default(PENDING_HOLD)
   holdExpiresAt         DateTime
   releasedAt            DateTime?
   dispatchedAt          DateTime?
   cancelledAt           DateTime?
-  
-  // Supplier Info
+
   supplierType          SupplierType?
   supplierOrderId       String?
   supplierOrderNumber   String?
   supplierTotalCost     Float?
-  
-  // Error handling & Retries
+
   retryCount            Int           @default(0)
   lastErrorReason       String?
   manualReviewNotes     String?
@@ -105,7 +100,7 @@ model OrderItem {
   id                    String         @id @default(uuid())
   orderId               String
   order                 Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
+
   shopifyLineItemId     String
   shopifyProductId      String?
   shopifyVariantId      String
@@ -114,11 +109,10 @@ model OrderItem {
   storeSku              String
   quantity              Int
   price                 Float
-  
-  // Sku Mapping Link
+
   skuMappingId          String?
   skuMapping            SkuMapping?    @relation(fields: [skuMappingId], references: [id])
-  
+
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
 
@@ -130,29 +124,26 @@ model SkuMapping {
   id                    String         @id @default(uuid())
   storeSku              String         @unique
   productName           String
-  
-  // Primary Supplier (Priority 1)
+
   primarySupplier       SupplierType   @default(CJ)
   primarySupplierSku    String
   primarySupplierPid    String?
   primarySupplierVid    String?
   primaryCostPrice      Float
   primaryShippingCost   Float          @default(0.0)
-  
-  // Backup Supplier (Priority 2)
+
   backupSupplier        SupplierType?  @default(ZENDROP)
   backupSupplierSku     String?
   backupSupplierPid     String?
   backupSupplierVid     String?
   backupCostPrice       Float?
   backupShippingCost    Float?         @default(0.0)
-  
-  // Pricing Strategy
+
   markupMultiplier      Float          @default(2.5)
   shippingBufferUsd     Float          @default(3.0)
   calculatedSellingPrice Float
   isActive              Boolean        @default(true)
-  
+
   orderItems            OrderItem[]
   productVariants       ProductVariant[]
 
@@ -169,7 +160,7 @@ model ProductVariant {
   price                 Float
   costPrice             Float          @default(0.0)
   inventoryQuantity     Int            @default(0)
-  
+
   skuMappingId          String?
   skuMapping            SkuMapping?    @relation(fields: [skuMappingId], references: [id])
 
@@ -181,17 +172,17 @@ model Fulfillment {
   id                    String             @id @default(uuid())
   orderId               String
   order                 Order              @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
+
   supplierType          SupplierType
   trackingNumber        String
   trackingCompany       String             @default("USPS")
   trackingUrl           String?
   status                FulfillmentStatus  @default(PENDING)
-  
+
   syncedToShopify       Boolean            @default(false)
   shopifyFulfillmentId  String?
   syncedAt              DateTime?
-  
+
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
 
@@ -203,14 +194,14 @@ model BillingTransaction {
   id                    String         @id @default(uuid())
   orderId               String
   order                 Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
+
   supplierType          SupplierType
   amount                Float
   currency              String         @default("USD")
-  status                String         // SUCCESS, FAILED, PENDING
+  status                String
   supplierPaymentId     String?
   failureReason         String?
-  
+
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
 
@@ -222,12 +213,13 @@ model AdminUser {
   email        String    @unique
   passwordHash String
   name         String
-  role         String    @default("operator") // superadmin, operator, support
+  role         String    @default("operator")
   isActive     Boolean   @default(true)
 
-  // Two-factor authentication (TOTP authenticator app)
   totpSecret   String?
   totpEnabled  Boolean   @default(false)
+
+  avatarUrl    String?
 
   lastLoginAt  DateTime?
   createdAt    DateTime  @default(now())
@@ -236,8 +228,6 @@ model AdminUser {
   @@index([email])
 }
 
-// Dynamic runtime configuration (OTP rules, rate limits, business toggles).
-// Rows override the defaults read from .env without restarting the server.
 model AppSetting {
   key       String   @id
   value     String
@@ -250,8 +240,8 @@ model SourcingRequest {
   targetPrice           Float?
   estimatedDailyOrders  Int?
   notes                 String?
-  status                String         @default("PENDING") // PENDING, SOURCING, SOURCED, REJECTED
-  
+  status                String         @default("PENDING")
+
   supplierType          SupplierType   @default(CJ)
   supplierProductId     String?
   suggestedSku          String?

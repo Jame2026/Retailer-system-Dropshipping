@@ -22,7 +22,6 @@ export const Sidebar: React.FC = () => {
 
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-64 border-r border-slate-200 bg-white flex flex-col z-40 shadow-sm">
-      {/* Brand logo */}
       <div className="h-16 flex items-center gap-3 px-6 border-b border-slate-200">
         <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-teal-500 to-teal-400 flex items-center justify-center shadow-md shadow-teal-500/20">
           <Zap className="w-5 h-5 text-white fill-current" />
@@ -35,7 +34,6 @@ export const Sidebar: React.FC = () => {
         </div>
       </div>
 
-      {/* Nav Menu */}
       <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
         <div className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
           Operations
@@ -62,7 +60,6 @@ export const Sidebar: React.FC = () => {
         })}
       </nav>
 
-      {/* Status Footer */}
       <div className="p-4 border border-slate-200 bg-slate-50 m-3 rounded-2xl">
         <div className="flex items-center justify-between text-xs text-slate-600 mb-1">
           <span className="font-medium">Hold Buffer</span>

@@ -7,7 +7,7 @@ const PORT = env.PORT || 4000;
 
 async function bootstrap() {
   try {
-    // Verify database connection
+
     await prisma.$connect();
     logger.info(' Connected to PostgreSQL database via Prisma');
 

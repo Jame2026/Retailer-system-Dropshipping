@@ -102,9 +102,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'g
 
   return (
     <div className="group bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between text-slate-800">
-      {/* Top Image Container with Fixed Uniform Aspect Ratio */}
       <div className="relative aspect-square w-full bg-slate-100 overflow-hidden">
-        {/* Badges */}
         {product.tag && (
           <div className="absolute top-3 right-3 z-10">
             <span
@@ -119,7 +117,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'g
           </div>
         )}
 
-        {/* Product Image */}
         <img
           src={product.image}
           alt={product.title}
@@ -127,7 +124,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'g
           loading="lazy"
         />
 
-        {/* Subtle quick add on hover */}
         <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
           <span className="bg-white/90 backdrop-blur-sm text-slate-900 text-[11px] font-bold px-3 py-1.5 rounded-full shadow-md">
             Quick View
@@ -135,7 +131,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'g
         </div>
       </div>
 
-      {/* Product Details */}
       <div className="p-4 sm:p-5 flex flex-col flex-1 justify-between gap-3 bg-white">
         <div>
           <span className="text-[10px] uppercase tracking-wider text-teal-700 font-bold">
@@ -149,7 +144,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'g
           </h4>
         </div>
 
-        {/* Pricing */}
         <div className="flex items-center justify-center gap-2 font-mono">
           {product.originalPrice && product.originalPrice > product.price && (
             <span className="text-xs text-slate-400 line-through">
@@ -161,7 +155,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'g
           </span>
         </div>
 
-        {/* Add to Cart Button */}
         <button
           onClick={handleAdd}
           className={`w-full py-2.5 px-4 text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all duration-200 flex items-center justify-center gap-2 border ${

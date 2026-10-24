@@ -18,6 +18,5 @@ export function getCarrierTrackingUrl(trackingNumber: string, carrier: string = 
     return `https://www.dhl.com/en/express/tracking.html?AWB=${cleanNumber}`;
   }
 
-  // 17Track universal fallback
   return `https://t.17track.net/en#nums=${cleanNumber}`;
 }

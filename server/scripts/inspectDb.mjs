@@ -1,7 +1,3 @@
-/**
- * Read-only inspection of the configured database.
- * Usage: node scripts/inspectDb.mjs
- */
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();

@@ -9,7 +9,6 @@ import prisma from './database/client.js';
 async function startWorker() {
   logger.info('⚙️ Starting Dropshipping Background Worker Service...');
 
-  // 1. Hold Buffer Release Worker (Runs every 2 minutes)
   cron.schedule('*/2 * * * *', async () => {
     try {
       await processHoldBufferQueue();
@@ -19,7 +18,6 @@ async function startWorker() {
   });
   logger.info('⏰ Scheduled holdBuffer.worker (every 2 mins)');
 
-  // 2. Tracking Sync Job (Runs every 15 minutes)
   cron.schedule('*/15 * * * *', async () => {
     try {
       await runTrackingSyncJob();
@@ -29,7 +27,6 @@ async function startWorker() {
   });
   logger.info('⏰ Scheduled trackingSync.job (every 15 mins)');
 
-  // 3. Retry Billing Job (Runs every hour)
   cron.schedule('0 * * * *', async () => {
     try {
       await runRetryBillingJob();
@@ -39,7 +36,6 @@ async function startWorker() {
   });
   logger.info('⏰ Scheduled retryBilling.job (every hour)');
 
-  // Keep process alive
   const shutdown = async () => {
     logger.info('Shutting down background workers...');
     await prisma.$disconnect();

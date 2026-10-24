@@ -1,13 +1,3 @@
-/**
- * Admin UI theme audit.
- *
- *   node scripts/verify-admin-ui.mjs <token> [url] [path]
- *
- * Logs into the running app with a session token, opens the admin pages and
- * reports every visible element whose background is near-black — the app is a
- * light theme, so a non-empty report means a regression (like the black navbar).
- * Exits 1 when dark surfaces are found.
- */
 import { spawn } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
@@ -80,7 +70,6 @@ await new Promise((resolve, reject) => {
 await send('Page.enable');
 await send('Runtime.enable');
 
-/** Hydrates the stored profile (fetched server-side, so no dev-proxy involved). */
 async function seedProfile() {
   const res = await fetch(`${apiOrigin}/api/auth/me`, {
     headers: { Authorization: `Bearer ${token}` },
@@ -93,7 +82,6 @@ async function seedProfile() {
   return profile;
 }
 
-/** Seeds the session token + profile for the app origin, then loads a route. */
 async function load(route, profile) {
   await send('Page.navigate', { url: origin + '/' });
   await sleep(800);
@@ -111,7 +99,6 @@ async function load(route, profile) {
   }
 }
 
-/** Explains a bounced route (auth state, where we actually landed). */
 async function diagnostics(route) {
   const { result } = await send('Runtime.evaluate', {
     expression: `JSON.stringify({
@@ -125,7 +112,6 @@ async function diagnostics(route) {
   return JSON.parse(result?.value || '{}');
 }
 
-/** Opens the header profile menu so its dropdown gets audited too. */
 async function openProfileMenu() {
   const { result } = await send('Runtime.evaluate', {
     expression: `(() => { const b = document.querySelector('[title="View profile"]'); if (b) { b.click(); return true; } return false; })()`,
@@ -139,7 +125,6 @@ async function openProfileMenu() {
   return Boolean(result?.value) && Boolean(opened.result?.value);
 }
 
-/** Collects visible elements with a near-black background. */
 const AUDIT = `(() => {
   const dark = [];
   const lum = (c) => {
@@ -208,7 +193,7 @@ async function waitForTarget(portNum) {
       const page = targets.find((t) => t.type === 'page');
       if (page?.webSocketDebuggerUrl) return page.webSocketDebuggerUrl;
     } catch {
-      // chrome not up yet
+
     }
     await sleep(500);
   }

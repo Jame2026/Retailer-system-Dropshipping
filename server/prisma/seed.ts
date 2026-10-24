@@ -6,12 +6,10 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Starting database seeding...');
 
-  // 1. Seed Dynamic Admin Users in Supabase PostgreSQL
   const defaultAdminPass = bcrypt.hashSync('admin123', 10);
   const operatorPassHash = bcrypt.hashSync('operator123', 10);
   const supportPassHash = bcrypt.hashSync('support123', 10);
 
-  // Primary Superadmin: battambangprogrammer@gmail.com
   const primaryAdmin = await (prisma as any).adminUser.upsert({
     where: { email: 'battambangprogrammer@gmail.com' },
     update: { role: 'superadmin', isActive: true },
@@ -24,7 +22,6 @@ async function main() {
     },
   });
 
-  // Secondary dev admin accounts
   const superAdmin = await (prisma as any).adminUser.upsert({
     where: { email: 'admin@retailer-system.com' },
     update: { passwordHash: defaultAdminPass, role: 'superadmin', isActive: true },
@@ -64,7 +61,6 @@ async function main() {
   console.log(`- Seeded Primary Superadmin in Supabase: ${primaryAdmin.email} (Role: ${primaryAdmin.role})`);
   console.log(`- Seeded Other Admins in Supabase: ${superAdmin.email}, ${operatorUser.email}, ${supportUser.email}`);
 
-  // 2. Seed SKU Mappings
   const mapping1 = await prisma.skuMapping.upsert({
     where: { storeSku: 'RET-WATCH-001-SLV' },
     update: {},
@@ -85,7 +81,7 @@ async function main() {
       backupShippingCost: 4.5,
       markupMultiplier: 2.5,
       shippingBufferUsd: 3.0,
-      calculatedSellingPrice: 44.75, // (12.5 + 4.2) * 2.5 + 3.0
+      calculatedSellingPrice: 44.75,
       isActive: true,
     },
   });
@@ -113,7 +109,6 @@ async function main() {
     },
   });
 
-  // 3. Seed Test Orders
   const sampleOrder = await prisma.order.upsert({
     where: { shopifyOrderId: 'gid://shopify/Order/9900112233' },
     update: {},
@@ -139,7 +134,7 @@ async function main() {
       totalTax: 0.0,
       financialStatus: 'paid',
       status: OrderStatus.PENDING_HOLD,
-      holdExpiresAt: new Date(Date.now() + 6 * 60 * 60 * 1000), // 6 hours from now
+      holdExpiresAt: new Date(Date.now() + 6 * 60 * 60 * 1000),
       items: {
         create: [
           {

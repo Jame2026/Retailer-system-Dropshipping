@@ -28,8 +28,6 @@ export function authAdmin(req: AuthenticatedRequest, res: Response, next: NextFu
   try {
     const decoded = jwt.verify(token, env.JWT_SECRET) as AdminAuthPayload & { purpose?: string };
 
-    // Short-lived OTP-session / 2FA-setup tokens must never work as API
-    // access tokens — only full login tokens (no purpose, or purpose=access).
     if (decoded.purpose && decoded.purpose !== 'access') {
       return res.status(401).json({
         success: false,

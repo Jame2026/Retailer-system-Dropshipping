@@ -7,6 +7,8 @@ export interface AdminProfile {
   email: string;
   name: string;
   role: string;
+
+  avatarUrl?: string | null;
 }
 
 export type TokenPurpose = 'otp' | '2fa-setup';
@@ -17,7 +19,6 @@ export interface PurposePayload {
   purpose: TokenPurpose;
 }
 
-/** Long-lived API token used by authAdmin (purpose must be access/absent). */
 export function signAccessToken(profile: AdminProfile): string {
   const options: SignOptions = { expiresIn: env.JWT_EXPIRES_IN as SignOptions['expiresIn'] };
   return jwt.sign(
@@ -27,10 +28,6 @@ export function signAccessToken(profile: AdminProfile): string {
   );
 }
 
-/**
- * Short-lived single-purpose token (OTP session or 2FA enrolment).
- * The TTL comes from the dynamic settings so it can be tuned at runtime.
- */
 export async function signPurposeToken(
   user: { id: string; email: string },
   purpose: TokenPurpose
@@ -42,7 +39,6 @@ export async function signPurposeToken(
   });
 }
 
-/** Verify a short-lived single-purpose token; returns null when invalid. */
 export function verifyPurposeToken(token: string, purpose: TokenPurpose): PurposePayload | null {
   try {
     const decoded = jwt.verify(token, env.JWT_SECRET) as PurposePayload;

@@ -3,7 +3,6 @@ import { reviewController } from '../../controllers/review.controller.js';
 
 const router = Router();
 
-// RESTful Resource Routes (like Route::resource in Laravel)
 router.get('/', reviewController.index.bind(reviewController));
 router.get('/:id', reviewController.show.bind(reviewController));
 router.post('/', reviewController.store.bind(reviewController));

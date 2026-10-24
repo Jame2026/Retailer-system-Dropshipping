@@ -35,7 +35,6 @@ export const PricingRulesPage: React.FC = () => {
       }
     >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column: Live Formula Sandbox */}
         <div className="lg:col-span-2 space-y-6">
           <PricingCalculator
             initialBaseCost={12.0}
@@ -67,7 +66,6 @@ export const PricingRulesPage: React.FC = () => {
           </Card>
         </div>
 
-        {/* Right Column: Global Settings Controls */}
         <div className="space-y-6">
           <Card className="space-y-4">
             <h3 className="text-sm font-bold text-slate-900">Default Rule Parameters</h3>

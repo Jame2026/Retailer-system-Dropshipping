@@ -21,7 +21,6 @@ export const SettingsPage: React.FC = () => {
   const [balanceAlertThreshold, setBalanceAlertThreshold] = useState(100.0);
   const [saving, setSaving] = useState(false);
 
-  // Dynamic security settings (OTP + rate limits), loaded from the API.
   const [security, setSecurity] = useState<DynamicSettings | null>(null);
   const [securityForm, setSecurityForm] = useState<DynamicSettings | null>(null);
   const [savingSecurity, setSavingSecurity] = useState(false);
@@ -38,7 +37,7 @@ export const SettingsPage: React.FC = () => {
       .catch((err) =>
         showToast('error', 'Could not load security settings', err instanceof Error ? err.message : '')
       );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []);
 
   const setField = <K extends keyof DynamicSettings>(key: K, value: DynamicSettings[K]) => {
@@ -85,7 +84,7 @@ export const SettingsPage: React.FC = () => {
     setConfirmOut(false);
     logout();
     showToast('info', 'Signed out', 'Your session token was cleared.');
-    navigate('/login', { replace: true });
+    navigate('/', { replace: true });
   };
 
   const handleSave = () => {
@@ -108,7 +107,6 @@ export const SettingsPage: React.FC = () => {
       }
     >
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Shopify Configuration */}
         <Card className="space-y-4">
           <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
             <Webhook className="w-5 h-5 text-teal-600" />
@@ -127,7 +125,7 @@ export const SettingsPage: React.FC = () => {
                 Active Webhook Endpoint
               </label>
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 font-mono text-xs text-teal-800 select-all">
-                https://api.yourdomain.com/webhooks/shopify/orders-paid
+                https:
               </div>
               <p className="text-[11px] text-slate-500 mt-1">
                 HMAC SHA256 verified raw body listener mounted.
@@ -136,7 +134,6 @@ export const SettingsPage: React.FC = () => {
           </div>
         </Card>
 
-        {/* CJ Dropshipping API */}
         <Card className="space-y-4">
           <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
             <Key className="w-5 h-5 text-teal-600" />
@@ -164,7 +161,6 @@ export const SettingsPage: React.FC = () => {
           </div>
         </Card>
 
-        {/* Zendrop Backup Connector */}
         <Card className="space-y-4">
           <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
             <Shield className="w-5 h-5 text-teal-600" />
@@ -181,7 +177,6 @@ export const SettingsPage: React.FC = () => {
           </div>
         </Card>
 
-        {/* Dynamic Security Settings (OTP + Rate Limiting) */}
         <Card className="space-y-4">
           <div className="flex items-center justify-between pb-2 border-b border-slate-200">
             <div className="flex items-center gap-2.5">
@@ -302,7 +297,6 @@ export const SettingsPage: React.FC = () => {
           )}
         </Card>
 
-        {/* System Health */}
         <Card className="space-y-4">
           <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
             <CheckCircle2 className="w-5 h-5 text-teal-600" />

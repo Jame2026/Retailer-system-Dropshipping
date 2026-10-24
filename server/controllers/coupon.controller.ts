@@ -2,9 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { couponService } from '../services/coupon.service.js';
 
 export class CouponController {
-  /**
-   * GET /api/coupons
-   */
+
   async index(req: Request, res: Response, next: NextFunction) {
     try {
       const page = Number(req.query.page) || 1;
@@ -16,9 +14,6 @@ export class CouponController {
     }
   }
 
-  /**
-   * GET /api/coupons/:id
-   */
   async show(req: Request, res: Response, next: NextFunction) {
     try {
       const id = String(req.params.id);
@@ -32,9 +27,6 @@ export class CouponController {
     }
   }
 
-  /**
-   * POST /api/coupons
-   */
   async store(req: Request, res: Response, next: NextFunction) {
     try {
       const data = await couponService.create(req.body);
@@ -44,9 +36,6 @@ export class CouponController {
     }
   }
 
-  /**
-   * PUT /api/coupons/:id
-   */
   async update(req: Request, res: Response, next: NextFunction) {
     try {
       const id = String(req.params.id);
@@ -57,9 +46,6 @@ export class CouponController {
     }
   }
 
-  /**
-   * DELETE /api/coupons/:id
-   */
   async destroy(req: Request, res: Response, next: NextFunction) {
     try {
       const id = String(req.params.id);

@@ -4,7 +4,6 @@ import { Facebook, Twitter, Instagram, Youtube } from 'lucide-react';
 export const StoreFooter: React.FC = () => {
   return (
     <footer className="w-full bg-white text-slate-600 border-t border-slate-200 text-xs">
-      {/* App Download Callout */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 border-b border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-6 bg-slate-50/50 rounded-2xl my-6">
         <div>
           <h3 className="text-xl font-black text-slate-900">Download Mobile App</h3>
@@ -20,7 +19,6 @@ export const StoreFooter: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Footer Links */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 grid grid-cols-2 md:grid-cols-5 gap-8">
         <div className="space-y-3">
           <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Brands</h4>
@@ -83,7 +81,6 @@ export const StoreFooter: React.FC = () => {
         </div>
       </div>
 
-      {/* Bottom bar */}
       <div className="border-t border-slate-200 py-6 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
           <p>© 2026 VOISEN Fashion Dropship Store. All rights reserved.</p>

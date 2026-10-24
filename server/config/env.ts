@@ -38,12 +38,13 @@ const envSchema = z.object({
   ZENDROP_API_KEY: z.string().optional().or(z.literal('')),
   ZENDROP_BASE_URL: z.string().url().default('https://api.zendrop.com/v1'),
 
+  GOOGLE_CLIENT_ID: z.string().default(''),
+  GOOGLE_CLIENT_SECRET: z.string().default(''),
+
   HOLD_BUFFER_HOURS: z.coerce.number().default(6),
   DEFAULT_MARKUP_MULTIPLIER: z.coerce.number().default(2.5),
   DEFAULT_SHIPPING_BUFFER_USD: z.coerce.number().default(3.0),
 
-  // Two-factor authentication (TOTP) defaults.
-  // Runtime overrides live in the AppSetting table (see services/settings.service.ts).
   OTP_ISSUER: z.string().default('Retailer Dropshipping Admin'),
   OTP_LENGTH: z.coerce.number().int().min(4).max(8).default(6),
   OTP_STEP_SECONDS: z.coerce.number().int().min(15).max(120).default(30),
@@ -51,7 +52,6 @@ const envSchema = z.object({
   OTP_SESSION_TTL_MINUTES: z.coerce.number().int().min(1).max(30).default(5),
   AUTH_REQUIRE_OTP: boolFromEnv(true),
 
-  // Rate limiting defaults (also overridable at runtime via AppSetting).
   RATE_LIMIT_API_WINDOW_SEC: z.coerce.number().int().default(900),
   RATE_LIMIT_API_MAX: z.coerce.number().int().default(600),
   RATE_LIMIT_LOGIN_WINDOW_SEC: z.coerce.number().int().default(900),

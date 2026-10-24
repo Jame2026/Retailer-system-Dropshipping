@@ -14,12 +14,12 @@ export const redis = new Redis({
 });
 
 redis.on('connect', () => {
-  // Connected successfully
+
 });
 
 redis.on('error', (err) => {
-  // Silent fail in dev or fallback gracefully if Redis is not running locally
+
   if (env.NODE_ENV === 'development') {
-    // Keep log minimal to avoid polluting terminal in dev without Redis
+
   }
 });

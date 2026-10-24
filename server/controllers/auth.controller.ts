@@ -19,7 +19,7 @@ export class AuthController {
       }
 
       const normalizedEmail = email.trim().toLowerCase();
-      // Lookup admin user in Supabase PostgreSQL
+
       const user = await (prisma as any).adminUser.findUnique({
         where: { email: normalizedEmail },
       });
@@ -38,7 +38,6 @@ export class AuthController {
         });
       }
 
-      // Verify bcrypt password hash
       const isPasswordValid = bcrypt.compareSync(password, user.passwordHash);
       if (!isPasswordValid) {
         return res.status(401).json({
@@ -47,13 +46,11 @@ export class AuthController {
         });
       }
 
-      // Update last login timestamp in Supabase
       await (prisma as any).adminUser.update({
         where: { id: user.id },
         data: { lastLoginAt: new Date() },
       });
 
-      // Sign JWT with system secret
       const token = jwt.sign(
         {
           adminId: user.id,

@@ -16,7 +16,6 @@ export const SourcingPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [isSourcingModalOpen, setIsSourcingModalOpen] = useState(false);
 
-  // Demo supplier items
   const demoSupplierItems = [
     {
       pid: 'CJ-P-100234',
@@ -89,7 +88,6 @@ export const SourcingPage: React.FC = () => {
         </Button>
       }
     >
-      {/* Search Bar */}
       <Card className="space-y-4">
         <form onSubmit={handleSearch} className="flex gap-3">
           <div className="relative flex-1">
@@ -107,7 +105,6 @@ export const SourcingPage: React.FC = () => {
         </form>
       </Card>
 
-      {/* Catalog Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {displayList.map((item) => (
           <Card key={item.pid} hoverEffect className="flex flex-col justify-between space-y-4 p-5">
@@ -160,7 +157,6 @@ export const SourcingPage: React.FC = () => {
         ))}
       </div>
 
-      {/* Sourcing Modal */}
       <SourcingModal
         isOpen={isSourcingModalOpen}
         onClose={() => setIsSourcingModalOpen(false)}

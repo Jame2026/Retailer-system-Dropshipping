@@ -28,7 +28,6 @@ export interface StorefrontFilterOptions {
   limit?: number;
 }
 
-// Master dynamic catalog data
 const BASE_CATALOG_PRODUCTS: StorefrontProduct[] = [
   {
     id: 'prod-1',
@@ -188,13 +187,10 @@ const BASE_CATALOG_PRODUCTS: StorefrontProduct[] = [
 ];
 
 export class CatalogService {
-  /**
-   * Fetch all dynamic storefront products with filtering, search, pricing, and pagination
-   */
+
   async getStorefrontProducts(options: StorefrontFilterOptions = {}) {
     let products = [...BASE_CATALOG_PRODUCTS];
 
-    // Merge in any custom SKU mappings from database if they exist
     try {
       const dbMappings = await prisma.skuMapping.findMany({
         where: { isActive: true },
@@ -215,20 +211,18 @@ export class CatalogService {
         });
       }
     } catch {
-      // Fall back smoothly to memory products if database query fails
+
     }
 
-    // Filter by category
     if (options.category && options.category.trim() && options.category.toLowerCase() !== 'all categories') {
       const catLower = options.category.toLowerCase().trim();
       products = products.filter((p) => {
-        // Support matching 'Clothings', 'Lookbook' (maps to clothing/featured), etc.
+
         if (catLower === 'lookbook') return p.tag === 'HOT' || p.tag === 'SALE' || p.category.toLowerCase() === 'clothings';
         return p.category.toLowerCase() === catLower;
       });
     }
 
-    // Filter by Tag (Popular, New, Sale, Hot)
     if (options.tag && options.tag.trim()) {
       const tagLower = options.tag.toLowerCase().trim();
       if (tagLower === 'popular') {
@@ -238,13 +232,11 @@ export class CatalogService {
       }
     }
 
-    // Filter by Brand
     if (options.brand && options.brand.trim() && options.brand.toLowerCase() !== 'all brands') {
       const brandLower = options.brand.toLowerCase().trim();
       products = products.filter((p) => p.brand?.toLowerCase() === brandLower);
     }
 
-    // Filter by Search
     if (options.search && options.search.trim()) {
       const searchTerms = options.search.toLowerCase().trim();
       products = products.filter(
@@ -256,7 +248,6 @@ export class CatalogService {
       );
     }
 
-    // Filter by Price range
     if (options.maxPrice && options.maxPrice > 0) {
       products = products.filter((p) => p.price <= (options.maxPrice as number));
     }
@@ -264,7 +255,6 @@ export class CatalogService {
       products = products.filter((p) => p.price >= (options.minPrice as number));
     }
 
-    // Sort
     if (options.sortBy) {
       switch (options.sortBy) {
         case 'price-asc':
@@ -297,9 +287,6 @@ export class CatalogService {
     };
   }
 
-  /**
-   * Get single product by ID or SKU
-   */
   async getStorefrontProductById(idOrSku: string): Promise<StorefrontProduct | null> {
     const products = (await this.getStorefrontProducts({ limit: 100 })).items;
     return (
@@ -309,9 +296,6 @@ export class CatalogService {
     );
   }
 
-  /**
-   * Get dynamic categories and brand counts
-   */
   async getStorefrontMeta() {
     const allProducts = BASE_CATALOG_PRODUCTS;
     const categoryCounts: Record<string, number> = {};

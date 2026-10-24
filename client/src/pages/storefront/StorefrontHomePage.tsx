@@ -45,10 +45,8 @@ export const StorefrontHomePage: React.FC = () => {
       <StoreHeader />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 space-y-12">
-        {/* Hero Banner */}
         <HeroBanner />
 
-        {/* Feature Badges */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center gap-3 shadow-sm">
             <Truck className="w-6 h-6 text-teal-600 shrink-0" />
@@ -80,7 +78,6 @@ export const StorefrontHomePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Popular Products Section (matching screenshot 2) */}
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>

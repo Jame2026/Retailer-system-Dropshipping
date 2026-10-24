@@ -1,17 +1,3 @@
-/**
- * Set (or create) an admin account password.
- *
- * Usage:
- *   npm run set-password -- <email> <password> [role] [name]
- *
- * Examples:
- *   npm run set-password -- admin@retailer-system.com 'MyNewPass123!'
- *   npm run set-password -- operator@retailer-system.com 'OpPass123!' operator
- *
- * Notes:
- *  - Only the password is touched; existing 2FA enrolment is preserved.
- *  - Roles: superadmin | operator | support
- */
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';

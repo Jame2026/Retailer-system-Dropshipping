@@ -47,7 +47,7 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
         });
         setResult(data);
       } catch {
-        // Local calculation fallback
+
         const totalCost = baseCost + shippingCost;
         const sellingPrice = Math.round((totalCost * multiplier + buffer) * 100) / 100;
         const profitMarginUsd = Math.round((sellingPrice - totalCost) * 100) / 100;
@@ -114,7 +114,6 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
         />
       </div>
 
-      {/* Output Results Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
         <div className="p-4 rounded-2xl bg-teal-50 border border-teal-200">
           <div className="flex items-center justify-between text-teal-800 text-xs font-bold uppercase">

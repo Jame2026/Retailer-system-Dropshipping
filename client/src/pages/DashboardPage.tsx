@@ -23,7 +23,6 @@ export const DashboardPage: React.FC = () => {
   const [selectedRetryOrder, setSelectedRetryOrder] = useState<Order | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
 
-  // Compute metrics
   const totalRevenue = orders.reduce((sum, o) => sum + o.totalPrice, 0);
   const heldOrders = orders.filter((o) => o.status === 'PENDING_HOLD');
   const dispatchedOrders = orders.filter((o) =>
@@ -56,10 +55,8 @@ export const DashboardPage: React.FC = () => {
         </NavLink>
       }
     >
-      {/* Wallet Balance Low Warning Alert */}
       <BillingBalanceAlert cjBalanceUsd={38.4} thresholdUsd={100.0} />
 
-      {/* Primary KPI Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatsCard
           title="Total Order GMV"
@@ -98,7 +95,6 @@ export const DashboardPage: React.FC = () => {
         />
       </div>
 
-      {/* Active Orders Queue Preview */}
       <div className="space-y-3 pt-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -119,7 +115,6 @@ export const DashboardPage: React.FC = () => {
         />
       </div>
 
-      {/* Manual Override Modal */}
       {selectedRetryOrder && (
         <ManualRetryModal
           isOpen={!!selectedRetryOrder}

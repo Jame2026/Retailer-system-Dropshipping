@@ -16,9 +16,6 @@ export class ShopifyClient {
     });
   }
 
-  /**
-   * Fetch order by Shopify Order ID
-   */
   async getOrder(orderId: string | number) {
     try {
       const response = await this.client.get(`/orders/${orderId}.json`);
@@ -29,9 +26,6 @@ export class ShopifyClient {
     }
   }
 
-  /**
-   * Cancel an order in Shopify
-   */
   async cancelOrder(orderId: string | number, reason: string = 'customer') {
     try {
       const response = await this.client.post(`/orders/${orderId}/cancel.json`, {
@@ -45,9 +39,6 @@ export class ShopifyClient {
     }
   }
 
-  /**
-   * Get Fulfillment Orders for a Shopify order
-   */
   async getFulfillmentOrders(orderId: string | number) {
     try {
       const response = await this.client.get(`/orders/${orderId}/fulfillment_orders.json`);
@@ -61,9 +52,6 @@ export class ShopifyClient {
     }
   }
 
-  /**
-   * GraphQL execution helper for advanced Shopify queries
-   */
   async graphql(query: string, variables: Record<string, any> = {}) {
     try {
       const response = await this.client.post('/graphql.json', {

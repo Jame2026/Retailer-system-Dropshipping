@@ -3,7 +3,6 @@ import { couponController } from '../../controllers/coupon.controller.js';
 
 const router = Router();
 
-// RESTful Resource Routes (like Route::resource in Laravel)
 router.get('/', couponController.index.bind(couponController));
 router.get('/:id', couponController.show.bind(couponController));
 router.post('/', couponController.store.bind(couponController));

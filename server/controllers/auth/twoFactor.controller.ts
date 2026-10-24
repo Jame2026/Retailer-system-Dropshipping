@@ -24,7 +24,7 @@ const ALREADY_ENABLED = 'Two-factor authentication is already enabled';
 const INVALID_SETUP = 'Invalid or expired setup session';
 
 export class TwoFactorController {
-  /** Rotate the pending TOTP secret during enrolment (never after enable). */
+
   async setup2fa(req: Request, res: Response, next: NextFunction) {
     try {
       const { setupToken } = setup2faSchema.parse(req.body);
@@ -63,7 +63,6 @@ export class TwoFactorController {
     }
   }
 
-  /** Step 2a — confirm the authenticator code, enable 2FA, complete login. */
   async enable2fa(req: Request, res: Response, next: NextFunction) {
     try {
       const { setupToken, otp } = enable2faSchema.parse(req.body);
@@ -104,7 +103,6 @@ export class TwoFactorController {
     }
   }
 
-  /** Turn 2FA off with a valid current code (normal opt-out). */
   async disable2fa(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const { otp } = disable2faSchema.parse(req.body);
@@ -129,10 +127,6 @@ export class TwoFactorController {
     }
   }
 
-  /**
-   * Reset 2FA with password re-verification — the recovery path when the
-   * authenticator device is lost. Forces enrolment again at next login.
-   */
   async reset2fa(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const { password } = reset2faSchema.parse(req.body);

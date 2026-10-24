@@ -46,7 +46,6 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
 
   return (
     <aside className="w-full lg:w-64 space-y-8 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm text-slate-800">
-      {/* Sidebar Heading */}
       <div className="bg-slate-900 text-white font-extrabold text-xs uppercase tracking-widest px-4 py-3 rounded-lg flex items-center justify-between">
         <span>Shop By</span>
         <button
@@ -57,7 +56,6 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
         </button>
       </div>
 
-      {/* Category Section */}
       <div className="space-y-3">
         <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b border-slate-100 pb-2">
           Category
@@ -82,7 +80,6 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
         </ul>
       </div>
 
-      {/* Price Range Slider */}
       <div className="space-y-3">
         <div className="flex items-center justify-between border-b border-slate-100 pb-2">
           <h4 className="text-xs font-black uppercase tracking-wider text-slate-900">Price</h4>
@@ -107,7 +104,6 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
         </div>
       </div>
 
-      {/* Manufacturer / Brands */}
       <div className="space-y-3">
         <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b border-slate-100 pb-2">
           Manufacturer
