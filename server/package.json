@@ -20,7 +20,10 @@
     "make:service": "tsx scripts/make.ts service",
     "make:route": "tsx scripts/make.ts route",
     "make": "tsx scripts/make.ts all",
-    "test": "tsx --test tests/**/*.test.ts"
+    "test": "tsx --test tests/**/*.test.ts",
+    "type-check": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^6.4.1",

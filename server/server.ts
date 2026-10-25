@@ -5,11 +5,23 @@ import prisma from './database/client.js';
 
 const PORT = env.PORT || 4000;
 
+async function connectWithRetry(retries = 5, delayMs = 1500) {
+  for (let i = 1; i <= retries; i++) {
+    try {
+      await prisma.$connect();
+      logger.info(' Connected to PostgreSQL database via Prisma');
+      return;
+    } catch (err: any) {
+      if (i === retries) throw err;
+      logger.warn(`Waiting for database to be ready (attempt ${i}/${retries})...`);
+      await new Promise((res) => setTimeout(res, delayMs));
+    }
+  }
+}
+
 async function bootstrap() {
   try {
-
-    await prisma.$connect();
-    logger.info(' Connected to PostgreSQL database via Prisma');
+    await connectWithRetry();
 
     const server = app.listen(PORT, () => {
       logger.info(`🚀 Retailer Dropshipping Server running on port ${PORT} [${env.NODE_ENV}]`);
