@@ -5,7 +5,7 @@ export interface DialogProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
-  description?: string;
+  description?: ReactNode;
   children: ReactNode;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 }
@@ -57,7 +57,7 @@ export const Dialog: React.FC<DialogProps> = ({
         <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div>
             <h3 className="text-lg font-bold text-slate-900">{title}</h3>
-            {description && <p className="text-xs text-slate-500 mt-0.5">{description}</p>}
+            {description && <div className="text-xs text-slate-500 mt-0.5">{description}</div>}
           </div>
           <button
             onClick={onClose}

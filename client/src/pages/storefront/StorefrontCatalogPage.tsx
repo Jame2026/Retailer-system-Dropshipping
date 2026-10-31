@@ -3,12 +3,18 @@ import { useSearchParams } from 'react-router-dom';
 import { StoreHeader } from '../../components/storefront/StoreHeader.js';
 import { StoreFooter } from '../../components/storefront/StoreFooter.js';
 import { CategorySidebar } from '../../components/storefront/CategorySidebar.js';
-import { ProductCard, ProductItem } from '../../components/storefront/ProductCard.js';
+import { ProductItem } from '../../components/storefront/ProductCard.js';
 import { CartDrawer } from '../../components/storefront/CartDrawer.js';
+import { ErrorState } from '../../components/common/ErrorState.js';
+import { Pagination } from '../../components/common/Pagination.js';
+import { CatalogToolbar } from '../../components/storefront/CatalogToolbar.js';
+import { CatalogBreadcrumbBar } from '../../components/storefront/CatalogBreadcrumbBar.js';
+import { CatalogProductSection } from '../../components/storefront/CatalogProductSection.js';
 import { catalogService, StorefrontMeta } from '../../services/catalogService.js';
-import { LayoutGrid, List, Loader2 } from 'lucide-react';
+import { useStorefrontLayout } from '../../components/layout/StorefrontLayout.js';
 
 export const StorefrontCatalogPage: React.FC = () => {
+  const { isInsideStorefrontLayout } = useStorefrontLayout();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialCategory = searchParams.get('category') || '';
   const initialSearch = searchParams.get('search') || '';
@@ -16,217 +22,175 @@ export const StorefrontCatalogPage: React.FC = () => {
 
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
   const [maxPrice, setMaxPrice] = useState<number>(300);
+  const [debouncedMaxPrice, setDebouncedMaxPrice] = useState<number>(300);
   const [selectedBrand, setSelectedBrand] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('featured');
-  const [pageSize, setPageSize] = useState<number>(9);
+  const [page, setPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(12);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [totalCount, setTotalCount] = useState<number>(0);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const [products, setProducts] = useState<ProductItem[]>([]);
-  const [meta, setMeta] = useState<StorefrontMeta>({
-    categories: [],
-    brands: [],
-    totalProducts: 0,
-  });
+  const [meta, setMeta] = useState<StorefrontMeta>({ categories: [], brands: [], totalProducts: 0 });
   const [loading, setLoading] = useState<boolean>(true);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setSelectedCategory(searchParams.get('category') || '');
   }, [searchParams]);
 
   useEffect(() => {
-    const fetchMeta = async () => {
-      try {
-        const data = await catalogService.getStorefrontMeta();
-        setMeta(data);
-      } catch (err) {
-        console.error('Failed to load catalog metadata', err);
-      }
-    };
-    fetchMeta();
-  }, []);
+    const timer = setTimeout(() => {
+      setDebouncedMaxPrice(maxPrice);
+      setPage(1);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [maxPrice]);
 
   useEffect(() => {
     let isMounted = true;
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        const search = searchParams.get('search') || initialSearch;
-        const tag = searchParams.get('tag') || initialTag;
+    catalogService.getStorefrontMeta().then((data) => {
+      if (isMounted) setMeta(data);
+    }).catch((err) => console.error('Failed to load catalog metadata', err));
+    return () => { isMounted = false; };
+  }, []);
 
-        const data = await catalogService.getStorefrontProducts({
-          category: selectedCategory,
-          tag,
-          search,
-          maxPrice,
-          brand: selectedBrand,
-          sortBy,
-          limit: pageSize,
-        });
+  const fetchProducts = async (forceRefresh = false) => {
+    try {
+      if (products.length === 0) setLoading(true);
+      else setIsRefreshing(true);
+      setError(null);
 
-        if (isMounted) {
-          setProducts(data.items || []);
-        }
-      } catch (err) {
-        console.error('Failed to fetch storefront products from backend', err);
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+      const search = searchParams.get('search') || initialSearch;
+      const tag = searchParams.get('tag') || initialTag;
+
+      const data = await catalogService.getStorefrontProducts({
+        category: selectedCategory || undefined,
+        tag: tag || undefined,
+        search: search || undefined,
+        maxPrice: debouncedMaxPrice,
+        brand: selectedBrand || undefined,
+        sortBy,
+        page,
+        limit: pageSize,
+      }, forceRefresh);
+
+      if (data?.items) {
+        setProducts(data.items);
+        const total = data.total || data.items.length;
+        setTotalCount(total);
+        setTotalPages(data.totalPages || Math.ceil(total / pageSize) || 1);
+      } else {
+        setProducts([]);
+        setTotalCount(0);
+        setTotalPages(1);
       }
-    };
+    } catch (err: any) {
+      if (err.name === 'CanceledError' || err.message === 'canceled') return;
+      console.error('Failed to fetch storefront products from backend', err);
+      setError(err?.message || 'Failed to load live products from server.');
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
+    }
+  };
 
+  useEffect(() => {
     fetchProducts();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [selectedCategory, maxPrice, selectedBrand, sortBy, pageSize, searchParams]);
+  }, [selectedCategory, debouncedMaxPrice, selectedBrand, sortBy, page, pageSize, searchParams]);
 
   const handleSelectCategory = (cat: string) => {
     setSelectedCategory(cat);
-    if (cat) {
-      setSearchParams({ category: cat });
-    } else {
-      setSearchParams({});
-    }
+    setPage(1);
+    if (cat) setSearchParams({ category: cat });
+    else setSearchParams({});
   };
 
   const handleResetFilters = () => {
     setSelectedCategory('');
     setMaxPrice(300);
+    setDebouncedMaxPrice(300);
     setSelectedBrand('');
+    setSortBy('featured');
+    setPage(1);
     setSearchParams({});
   };
+
+  const content = (
+    <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 space-y-6">
+      <CatalogBreadcrumbBar
+        categoryOrTag={selectedCategory || searchParams.get('tag')}
+        isRefreshing={isRefreshing}
+      />
+
+      <div className="flex flex-col lg:flex-row items-start gap-8">
+        <CategorySidebar
+          selectedCategory={selectedCategory}
+          onSelectCategory={handleSelectCategory}
+          maxPrice={maxPrice}
+          onChangeMaxPrice={setMaxPrice}
+          selectedBrand={selectedBrand}
+          onSelectBrand={(b) => { setSelectedBrand(b); setPage(1); }}
+          onResetFilters={handleResetFilters}
+          categoriesList={meta.categories}
+          brandsList={meta.brands}
+        />
+
+        <div className="flex-1 w-full space-y-6">
+          <CatalogToolbar
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            totalCount={totalCount}
+            page={page}
+            pageSize={pageSize}
+            onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+            sortBy={sortBy}
+            onSortByChange={(sort) => { setSortBy(sort); setPage(1); }}
+          />
+
+          {error && products.length > 0 && (
+            <ErrorState
+              variant="banner"
+              title="Sync Warning"
+              message={`Showing cached product data. ${error}`}
+              onRetry={() => fetchProducts(true)}
+            />
+          )}
+
+          <CatalogProductSection
+            loading={loading}
+            isRefreshing={isRefreshing}
+            error={error}
+            products={products}
+            viewMode={viewMode}
+            pageSize={pageSize}
+            onRetry={() => fetchProducts(true)}
+            onResetFilters={handleResetFilters}
+          />
+
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            totalCount={totalCount}
+            pageSize={pageSize}
+            className="bg-white p-4 rounded-2xl shadow-sm"
+          />
+        </div>
+      </div>
+    </main>
+  );
+
+  if (isInsideStorefrontLayout) {
+    return content;
+  }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-['Plus_Jakarta_Sans',sans-serif] text-slate-900">
       <StoreHeader />
-
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 space-y-6">
-        <div className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-          <span>Home</span>
-          <span>›</span>
-          <span className="text-teal-700">
-            {selectedCategory || searchParams.get('tag') || 'Catalog Products'}
-          </span>
-        </div>
-
-        <div className="flex flex-col lg:flex-row items-start gap-8">
-          <CategorySidebar
-            selectedCategory={selectedCategory}
-            onSelectCategory={handleSelectCategory}
-            maxPrice={maxPrice}
-            onChangeMaxPrice={setMaxPrice}
-            selectedBrand={selectedBrand}
-            onSelectBrand={setSelectedBrand}
-            onResetFilters={handleResetFilters}
-            categoriesList={meta.categories}
-            brandsList={meta.brands}
-          />
-
-          <div className="flex-1 w-full space-y-6">
-            <div className="bg-white p-3.5 rounded-2xl border border-slate-200 flex flex-wrap items-center justify-between gap-4 text-xs font-semibold text-slate-700 shadow-sm">
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-1.5 rounded-lg border ${
-                    viewMode === 'grid'
-                      ? 'bg-teal-600 text-white border-teal-600'
-                      : 'border-slate-300 text-slate-500 hover:bg-slate-100'
-                  }`}
-                  title="Grid View"
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-1.5 rounded-lg border ${
-                    viewMode === 'list'
-                      ? 'bg-teal-600 text-white border-teal-600'
-                      : 'border-slate-300 text-slate-500 hover:bg-slate-100'
-                  }`}
-                  title="List View"
-                >
-                  <List className="w-4 h-4" />
-                </button>
-                <span className="text-slate-500 ml-2">
-                  Showing <strong className="text-slate-900">{products.length}</strong> items
-                </span>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-slate-500">Show:</span>
-                  <select
-                    value={pageSize}
-                    onChange={(e) => setPageSize(Number(e.target.value))}
-                    className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1 text-slate-800 focus:outline-none focus:border-teal-600"
-                  >
-                    <option value={9}>9</option>
-                    <option value={18}>18</option>
-                    <option value={36}>36</option>
-                  </select>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-slate-500">Sort By:</span>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1 text-slate-800 focus:outline-none focus:border-teal-600"
-                  >
-                    <option value="featured">Featured</option>
-                    <option value="price-asc">Price: Low to High</option>
-                    <option value="price-desc">Price: High to Low</option>
-                    <option value="newest">Newest Arrivals</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Array.from({ length: 6 }).map((_, idx) => (
-                  <div
-                    key={idx}
-                    className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm animate-pulse space-y-4"
-                  >
-                    <div className="aspect-square bg-slate-200 rounded-xl w-full" />
-                    <div className="h-4 bg-slate-200 rounded w-1/3 mx-auto" />
-                    <div className="h-4 bg-slate-200 rounded w-3/4 mx-auto" />
-                    <div className="h-4 bg-slate-200 rounded w-1/2 mx-auto" />
-                    <div className="h-10 bg-slate-200 rounded-xl w-full" />
-                  </div>
-                ))}
-              </div>
-            ) : products.length === 0 ? (
-              <div className="py-24 text-center bg-white rounded-2xl border border-slate-200 text-slate-500 shadow-sm">
-                <p className="text-base font-bold text-slate-800">No products found matching your filters.</p>
-                <p className="text-xs text-slate-400 mt-1">Try adjusting your price range or category filter.</p>
-                <button
-                  onClick={handleResetFilters}
-                  className="mt-4 px-4 py-2 rounded-xl bg-teal-600 text-white text-xs font-extrabold uppercase tracking-wider hover:bg-teal-500 shadow transition-all"
-                >
-                  Reset all filters
-                </button>
-              </div>
-            ) : (
-              <div
-                className={
-                  viewMode === 'grid'
-                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
-                    : 'flex flex-col gap-4'
-                }
-              >
-                {products.map((product) => (
-                  <ProductCard key={product.id} product={product} viewMode={viewMode} />
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </main>
-
+      {content}
       <StoreFooter />
       <CartDrawer />
     </div>

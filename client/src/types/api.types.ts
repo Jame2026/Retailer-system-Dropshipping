@@ -13,4 +13,7 @@ export interface PaginatedData<T> {
   page: number;
   limit: number;
   totalPages: number;
+  totalRevenue?: number;
+  counts?: Record<string, number>;
 }
+

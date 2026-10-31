@@ -3,12 +3,15 @@ import { StoreHeader } from '../../components/storefront/StoreHeader.js';
 import { StoreFooter } from '../../components/storefront/StoreFooter.js';
 import { HeroBanner } from '../../components/storefront/HeroBanner.js';
 import { ProductCard, ProductItem } from '../../components/storefront/ProductCard.js';
+import { ProductGridSkeleton } from '../../components/common/ProductGridSkeleton.js';
 import { CartDrawer } from '../../components/storefront/CartDrawer.js';
 import { catalogService } from '../../services/catalogService.js';
+import { useStorefrontLayout } from '../../components/layout/StorefrontLayout.js';
 import { NavLink } from 'react-router-dom';
 import { ArrowRight, ShieldCheck, Truck, Clock, RefreshCw } from 'lucide-react';
 
 export const StorefrontHomePage: React.FC = () => {
+  const { isInsideStorefrontLayout } = useStorefrontLayout();
   const [popularProducts, setPopularProducts] = useState<ProductItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -18,7 +21,6 @@ export const StorefrontHomePage: React.FC = () => {
       try {
         setLoading(true);
         const data = await catalogService.getStorefrontProducts({
-          tag: 'Popular',
           limit: 8,
         });
         if (isMounted) {
@@ -40,88 +42,98 @@ export const StorefrontHomePage: React.FC = () => {
     };
   }, []);
 
+  const content = (
+    <main className="flex-1">
+      <HeroBanner />
+
+      {/* Trust Badges */}
+      <div className="border-b border-slate-100 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center sm:text-left">
+            <div className="flex items-center gap-3 justify-center sm:justify-start">
+              <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center text-teal-700">
+                <Truck className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-900">Direct Express Delivery</h4>
+                <p className="text-[11px] text-slate-400">Tracked CJ dropshipping</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 justify-center sm:justify-start">
+              <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center text-teal-700">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-900">Secure Payments</h4>
+                <p className="text-[11px] text-slate-400">100% encrypted checkout</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 justify-center sm:justify-start">
+              <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center text-teal-700">
+                <Clock className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-900">24/7 Support</h4>
+                <p className="text-[11px] text-slate-400">Dedicated assistance</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 justify-center sm:justify-start">
+              <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center text-teal-700">
+                <RefreshCw className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-900">Live Inventory</h4>
+                <p className="text-[11px] text-slate-400">Real-time factory stock</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Popular Products Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-widest text-teal-700">
+              Featured Collection
+            </span>
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5">
+              Popular Sourced Products
+            </h2>
+          </div>
+          <NavLink
+            to="/shop"
+            className="px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition-colors flex items-center gap-1.5"
+          >
+            <span>Shop All</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </NavLink>
+        </div>
+
+        {loading ? (
+          <ProductGridSkeleton count={8} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {popularProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
+      </div>
+    </main>
+  );
+
+  if (isInsideStorefrontLayout) {
+    return content;
+  }
+
   return (
     <div className="min-h-screen bg-white flex flex-col font-['Plus_Jakarta_Sans',sans-serif] text-slate-900">
       <StoreHeader />
-
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 space-y-12">
-        <HeroBanner />
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center gap-3 shadow-sm">
-            <Truck className="w-6 h-6 text-teal-600 shrink-0" />
-            <div>
-              <h5 className="text-xs font-bold text-slate-900">Fast USPS Delivery</h5>
-              <p className="text-[11px] text-slate-500">Direct from factory</p>
-            </div>
-          </div>
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center gap-3 shadow-sm">
-            <Clock className="w-6 h-6 text-amber-600 shrink-0" />
-            <div>
-              <h5 className="text-xs font-bold text-slate-900">6h Safety Hold</h5>
-              <p className="text-[11px] text-slate-500">Easy address fixes</p>
-            </div>
-          </div>
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center gap-3 shadow-sm">
-            <ShieldCheck className="w-6 h-6 text-indigo-600 shrink-0" />
-            <div>
-              <h5 className="text-xs font-bold text-slate-900">Verified Suppliers</h5>
-              <p className="text-[11px] text-slate-500">CJ & Zendrop inspected</p>
-            </div>
-          </div>
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center gap-3 shadow-sm">
-            <RefreshCw className="w-6 h-6 text-pink-600 shrink-0" />
-            <div>
-              <h5 className="text-xs font-bold text-slate-900">30-Day Returns</h5>
-              <p className="text-[11px] text-slate-500">Hassle-free guarantee</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-2xl font-black tracking-tight text-slate-900 uppercase">
-                Popular Products
-              </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Trending summer arrivals with direct supplier wholesale pricing
-              </p>
-            </div>
-            <NavLink
-              to="/shop"
-              className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-teal-800 text-xs font-bold transition-colors flex items-center gap-1.5 border border-slate-200"
-            >
-              <span>See All Products</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </NavLink>
-          </div>
-
-          {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {Array.from({ length: 8 }).map((_, idx) => (
-                <div
-                  key={idx}
-                  className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm animate-pulse space-y-4"
-                >
-                  <div className="aspect-square bg-slate-200 rounded-xl w-full" />
-                  <div className="h-4 bg-slate-200 rounded w-1/3 mx-auto" />
-                  <div className="h-4 bg-slate-200 rounded w-3/4 mx-auto" />
-                  <div className="h-4 bg-slate-200 rounded w-1/2 mx-auto" />
-                  <div className="h-10 bg-slate-200 rounded-xl w-full" />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {popularProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          )}
-        </div>
-      </main>
-
+      {content}
       <StoreFooter />
       <CartDrawer />
     </div>

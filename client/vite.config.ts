@@ -13,4 +13,7 @@ export default defineConfig({
     port: 3000,
     host: true,
   },
+  optimizeDeps: {
+    include: ['lucide-react', 'axios', 'react', 'react-dom', 'react-router-dom'],
+  },
 });

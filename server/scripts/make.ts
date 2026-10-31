@@ -1,229 +1,56 @@
 import fs from 'fs';
 import path from 'path';
+import {
+  formatNames,
+  getServiceContent,
+  getControllerContent,
+  getRouteContent,
+} from './make.templates.js';
 
 const serverRoot = path.resolve(process.cwd(), 'server');
 const effectiveRoot = fs.existsSync(path.join(serverRoot, 'prisma')) ? serverRoot : process.cwd();
 
-function formatNames(rawName: string) {
-  const clean = rawName.replace(/controller|service|model|routes?$/i, '').trim();
-  const pascalCase = clean.charAt(0).toUpperCase() + clean.slice(1);
-  const camelCase = clean.charAt(0).toLowerCase() + clean.slice(1);
-  const kebabCase = camelCase.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
-  const pluralName = camelCase.endsWith('y') ? camelCase.slice(0, -1) + 'ies' : camelCase + 's';
-  const pluralKebab = kebabCase.endsWith('y') ? kebabCase.slice(0, -1) + 'ies' : kebabCase + 's';
-
-  return {
-    pascal: pascalCase,
-    camel: camelCase,
-    kebab: kebabCase,
-    plural: pluralName,
-    pluralKebab: pluralKebab,
-  };
-}
+export { formatNames };
 
 export function createService(name: string) {
-  const { pascal, camel, plural, kebab } = formatNames(name);
-  const targetPath = path.join(effectiveRoot, 'services', `${kebab}.service.ts`);
+  const names = formatNames(name);
+  const targetPath = path.join(effectiveRoot, 'services', `${names.kebab}.service.ts`);
 
   if (fs.existsSync(targetPath)) {
-    console.log(`⚠️  Service already exists at: services/${kebab}.service.ts`);
+    console.log(`⚠️  Service already exists at: services/${names.kebab}.service.ts`);
     return targetPath;
   }
 
-  const content = `import { prisma } from '../database/client.js';
-
-export interface Create${pascal}Input {
-  [key: string]: any;
-}
-
-export interface Update${pascal}Input {
-  [key: string]: any;
-}
-
-export class ${pascal}Service {
-  /**
-   * Get all ${plural}
-   */
-  async getAll(page = 1, limit = 20) {
-    const skip = (page - 1) * limit;
-    const model = (prisma as any).${camel};
-
-    if (!model) {
-      throw new Error('Model ${pascal} is not defined in Prisma schema yet.');
-    }
-
-    const [items, total] = await Promise.all([
-      model.findMany({
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-      }),
-      model.count(),
-    ]);
-
-    return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
-  }
-
-  /**
-   * Get single ${camel} by ID
-   */
-  async getById(id: string) {
-    const model = (prisma as any).${camel};
-    return model.findUnique({ where: { id } });
-  }
-
-  /**
-   * Create new ${camel}
-   */
-  async create(data: Create${pascal}Input) {
-    const model = (prisma as any).${camel};
-    return model.create({ data });
-  }
-
-  /**
-   * Update existing ${camel}
-   */
-  async update(id: string, data: Update${pascal}Input) {
-    const model = (prisma as any).${camel};
-    return model.update({
-      where: { id },
-      data,
-    });
-  }
-
-  /**
-   * Delete ${camel}
-   */
-  async delete(id: string) {
-    const model = (prisma as any).${camel};
-    return model.delete({ where: { id } });
-  }
-}
-
-export const ${camel}Service = new ${pascal}Service();
-`;
-
-  fs.writeFileSync(targetPath, content, 'utf-8');
-  console.log(`✅ [Service] Created: server/services/${kebab}.service.ts`);
+  fs.writeFileSync(targetPath, getServiceContent(names), 'utf-8');
+  console.log(`✅ [Service] Created: server/services/${names.kebab}.service.ts`);
   return targetPath;
 }
 
 export function createController(name: string) {
-  const { pascal, camel, kebab } = formatNames(name);
-  const targetPath = path.join(effectiveRoot, 'controllers', `${kebab}.controller.ts`);
+  const names = formatNames(name);
+  const targetPath = path.join(effectiveRoot, 'controllers', `${names.kebab}.controller.ts`);
 
   if (fs.existsSync(targetPath)) {
-    console.log(`⚠️  Controller already exists at: controllers/${kebab}.controller.ts`);
+    console.log(`⚠️  Controller already exists at: controllers/${names.kebab}.controller.ts`);
     return targetPath;
   }
 
-  const content = `import { Request, Response, NextFunction } from 'express';
-import { ${camel}Service } from '../services/${kebab}.service.js';
-
-export class ${pascal}Controller {
-  /**
-   * GET /api/${kebab}s
-   */
-  async index(req: Request, res: Response, next: NextFunction) {
-    try {
-      const page = Number(req.query.page) || 1;
-      const limit = Number(req.query.limit) || 20;
-      const data = await ${camel}Service.getAll(page, limit);
-      return res.status(200).json({ success: true, data });
-    } catch (error) {
-      return next(error);
-    }
-  }
-
-  /**
-   * GET /api/${kebab}s/:id
-   */
-  async show(req: Request, res: Response, next: NextFunction) {
-    try {
-      const id = String(req.params.id);
-      const data = await ${camel}Service.getById(id);
-      if (!data) {
-        return res.status(404).json({ success: false, error: '${pascal} not found' });
-      }
-      return res.status(200).json({ success: true, data });
-    } catch (error) {
-      return next(error);
-    }
-  }
-
-  /**
-   * POST /api/${kebab}s
-   */
-  async store(req: Request, res: Response, next: NextFunction) {
-    try {
-      const data = await ${camel}Service.create(req.body);
-      return res.status(201).json({ success: true, message: '${pascal} created successfully', data });
-    } catch (error) {
-      return next(error);
-    }
-  }
-
-  /**
-   * PUT /api/${kebab}s/:id
-   */
-  async update(req: Request, res: Response, next: NextFunction) {
-    try {
-      const id = String(req.params.id);
-      const data = await ${camel}Service.update(id, req.body);
-      return res.status(200).json({ success: true, message: '${pascal} updated successfully', data });
-    } catch (error) {
-      return next(error);
-    }
-  }
-
-  /**
-   * DELETE /api/${kebab}s/:id
-   */
-  async destroy(req: Request, res: Response, next: NextFunction) {
-    try {
-      const id = String(req.params.id);
-      await ${camel}Service.delete(id);
-      return res.status(200).json({ success: true, message: '${pascal} deleted successfully' });
-    } catch (error) {
-      return next(error);
-    }
-  }
-}
-
-export const ${camel}Controller = new ${pascal}Controller();
-`;
-
-  fs.writeFileSync(targetPath, content, 'utf-8');
-  console.log(`✅ [Controller] Created: server/controllers/${kebab}.controller.ts`);
+  fs.writeFileSync(targetPath, getControllerContent(names), 'utf-8');
+  console.log(`✅ [Controller] Created: server/controllers/${names.kebab}.controller.ts`);
   return targetPath;
 }
 
 export function createRoute(name: string) {
-  const { pascal, camel, kebab } = formatNames(name);
-  const targetPath = path.join(effectiveRoot, 'routes', 'api', `${kebab}.routes.ts`);
+  const names = formatNames(name);
+  const targetPath = path.join(effectiveRoot, 'routes', 'api', `${names.kebab}.routes.ts`);
 
   if (fs.existsSync(targetPath)) {
-    console.log(`⚠️  Route already exists at: routes/api/${kebab}.routes.ts`);
+    console.log(`⚠️  Route already exists at: routes/api/${names.kebab}.routes.ts`);
     return targetPath;
   }
 
-  const content = `import { Router } from 'express';
-import { ${camel}Controller } from '../../controllers/${kebab}.controller.js';
-
-const router = Router();
-
-// RESTful Resource Routes (like Route::resource in Laravel)
-router.get('/', ${camel}Controller.index.bind(${camel}Controller));
-router.get('/:id', ${camel}Controller.show.bind(${camel}Controller));
-router.post('/', ${camel}Controller.store.bind(${camel}Controller));
-router.put('/:id', ${camel}Controller.update.bind(${camel}Controller));
-router.delete('/:id', ${camel}Controller.destroy.bind(${camel}Controller));
-
-export default router;
-`;
-
-  fs.writeFileSync(targetPath, content, 'utf-8');
-  console.log(`✅ [Route] Created: server/routes/api/${kebab}.routes.ts`);
+  fs.writeFileSync(targetPath, getRouteContent(names), 'utf-8');
+  console.log(`✅ [Route] Created: server/routes/api/${names.kebab}.routes.ts`);
   return targetPath;
 }
 

@@ -18,7 +18,11 @@ import {
   verifyOtpCode,
   invalidateProfileCache,
 } from '../../services/auth/admin.service.js';
-import { signAccessToken, verifyPurposeToken } from '../../services/auth/token.service.js';
+import {
+  signAccessToken,
+  signPurposeToken,
+  verifyPurposeToken,
+} from '../../services/auth/token.service.js';
 
 const ALREADY_ENABLED = 'Two-factor authentication is already enabled';
 const INVALID_SETUP = 'Invalid or expired setup session';
@@ -132,32 +136,54 @@ export class TwoFactorController {
       const { password } = reset2faSchema.parse(req.body);
 
       const user = await prisma.adminUser.findUnique({ where: { id: req.user!.adminId } });
-      if (!user || !user.isActive) {
-        return res.status(404).json({ success: false, error: 'Account not found' });
-      }
+      if (!user || !user.isActive) return res.status(404).json({ success: false, error: 'Account not found' });
 
       const passwordOk = await bcrypt.compare(password, user.passwordHash);
       if (!passwordOk) {
         logger.warn({ email: user.email }, '2FA reset attempt with wrong password');
         return res.status(401).json({ success: false, error: 'Password is incorrect' });
       }
-
       if (!user.totpEnabled && !user.totpSecret) {
-        return res
-          .status(400)
-          .json({ success: false, error: 'Two-factor authentication is not configured' });
+        return res.status(400).json({ success: false, error: 'Two-factor authentication is not configured' });
       }
-
-      await prisma.adminUser.update({
-        where: { id: user.id },
-        data: { totpEnabled: false, totpSecret: null },
-      });
+      await prisma.adminUser.update({ where: { id: user.id }, data: { totpEnabled: false, totpSecret: null } });
       invalidateProfileCache(user.id);
       logger.warn({ email: user.email }, 'Two-factor authentication reset via password');
-
       return res.status(200).json({
         success: true,
         message: 'Two-factor authentication reset. Set it up again at your next login.',
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async initiateSetup(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const user = await prisma.adminUser.findUnique({ where: { id: req.user!.adminId } });
+      if (!user || !user.isActive) {
+        return res.status(404).json({ success: false, error: 'Account not found' });
+      }
+      if (user.totpEnabled) {
+        return res.status(409).json({ success: false, error: ALREADY_ENABLED });
+      }
+      const setupToken = await signPurposeToken(user, '2fa-setup');
+      const settings = await settingsService.getAll();
+      const secret = generateTotpSecret();
+      await prisma.adminUser.update({ where: { id: user.id }, data: { totpSecret: secret } });
+      return res.status(200).json({
+        success: true,
+        data: {
+          setupToken,
+          secret,
+          otpauthUri: otpauthUri({
+            secret,
+            account: user.email,
+            issuer: env.OTP_ISSUER,
+            step: settings['auth.otpStepSeconds'],
+            digits: settings['auth.otpLength'],
+          }),
+        },
       });
     } catch (error) {
       return next(error);

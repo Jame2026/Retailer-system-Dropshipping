@@ -5,19 +5,23 @@ import {
   ShoppingCart,
   Layers,
   Calculator,
-  Compass,
+  Truck,
+  Sparkles,
+  Package,
   Settings,
   Zap,
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
   const navigationItems = [
-    { name: 'Dashboard', path: '/admin', exact: true },
-    { name: 'Orders Queue', path: '/admin/orders', icon: ShoppingCart },
-    { name: 'SKU Catalog', path: '/admin/catalog', icon: Layers },
+    { name: 'Dashboard', path: '/admin', exact: true, icon: LayoutDashboard },
+    { name: 'CJ Products', path: '/admin/cj-products', icon: Package },
+    { name: 'Orders', path: '/admin/orders', icon: ShoppingCart },
+    { name: 'Store Products', path: '/admin/catalog', icon: Layers },
+    { name: 'Shipping & Freight', path: '/admin/shipping', icon: Truck },
+    { name: 'Custom Sourcing', path: '/admin/sourcing', icon: Sparkles },
     { name: 'Pricing Rules', path: '/admin/pricing', icon: Calculator },
-    { name: '1-Click Sourcing', path: '/admin/sourcing', icon: Compass },
-    { name: 'Settings & APIs', path: '/admin/settings', icon: Settings },
+    { name: 'Settings', path: '/admin/settings', icon: Settings },
   ];
 
   return (
@@ -30,13 +34,13 @@ export const Sidebar: React.FC = () => {
           <h1 className="font-extrabold text-sm tracking-tight text-slate-900 flex items-center gap-1.5">
             DROPSHIP <span className="text-teal-600 font-semibold">CORE</span>
           </h1>
-          <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Automation Engine</p>
+          <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Store Manager</p>
         </div>
       </div>
 
-      <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
-        <div className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-          Operations
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+          Menu
         </div>
         {navigationItems.map((item) => {
           const Icon = item.icon || LayoutDashboard;
@@ -60,10 +64,10 @@ export const Sidebar: React.FC = () => {
         })}
       </nav>
 
-      <div className="p-4 border border-slate-200 bg-slate-50 m-3 rounded-2xl">
-        <div className="flex items-center justify-between text-xs text-slate-600 mb-1">
-          <span className="font-medium">Hold Buffer</span>
-          <span className="text-teal-700 font-bold">6 Hours</span>
+      <div className="p-3.5 border border-slate-200 bg-slate-50 m-3 rounded-2xl space-y-1.5">
+        <div className="flex items-center justify-between text-xs text-slate-600">
+          <span className="font-medium">Order Buffer</span>
+          <span className="text-teal-700 font-bold">Protection Active</span>
         </div>
         <div className="flex items-center justify-between text-xs text-slate-600">
           <span className="font-medium">Primary Supplier</span>

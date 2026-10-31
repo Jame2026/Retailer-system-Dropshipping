@@ -5,10 +5,12 @@ import { authAdmin } from '../../middleware/authAdmin.js';
 const router = Router();
 
 router.post('/request', authAdmin, sourcingController.submitSourcingRequest.bind(sourcingController));
+router.get('/requests', authAdmin, sourcingController.listSourcingRequests.bind(sourcingController));
 
 router.get('/cj/products', sourcingController.listCjProducts.bind(sourcingController));
 router.get('/cj/categories', sourcingController.getCjCategories.bind(sourcingController));
 router.get('/cj/warehouses', sourcingController.getCjWarehouses.bind(sourcingController));
+router.get('/cj/account', sourcingController.getCjAccountInfo.bind(sourcingController));
 router.get('/cj/product/:pid', sourcingController.getSupplierProductDetails.bind(sourcingController));
 
 router.get('/search', sourcingController.searchSupplierCatalog.bind(sourcingController));

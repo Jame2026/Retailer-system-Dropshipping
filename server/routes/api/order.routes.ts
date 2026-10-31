@@ -12,4 +12,10 @@ router.post('/override', authAdmin, orderController.manualOverride.bind(orderCon
 
 router.post('/:id/retry', authAdmin, orderController.retryOrder.bind(orderController));
 
+router.post('/:id/sync-cj', authAdmin, orderController.syncCjStatus.bind(orderController));
+
+router.patch('/:id/address', authAdmin, orderController.updateAddress.bind(orderController));
+
+router.post('/simulate', orderController.simulateOrder.bind(orderController));
+
 export default router;
