@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PageContainer } from '../components/layout/PageContainer.js';
-import { PricingCalculator } from '../components/modules/catalog/PricingCalculator.js';
-import { Card } from '../components/common/Card.js';
-import { Input } from '../components/common/Input.js';
-import { Button } from '../components/common/Button.js';
+import { catalogService } from '../services/catalogService.js';
 import { useNotification } from '../context/NotificationContext.js';
-import { Sparkles, Save } from 'lucide-react';
+import { PricingHowItWorks } from '../components/modules/pricing/PricingHowItWorks.js';
+import { PricingStrategyPresets, PricingStrategy } from '../components/modules/pricing/PricingStrategyPresets.js';
+import { PricingSimulatorCard } from '../components/modules/pricing/PricingSimulatorCard.js';
+import { PricingSettingsForm } from '../components/modules/pricing/PricingSettingsForm.js';
 
 export const PricingRulesPage: React.FC = () => {
   const { showToast } = useNotification();
@@ -13,105 +13,98 @@ export const PricingRulesPage: React.FC = () => {
   const [shippingBuffer, setShippingBuffer] = useState(3.0);
   const [charmPricingEnabled, setCharmPricingEnabled] = useState(true);
   const [minMarginPercent, setMinMarginPercent] = useState(40.0);
+  const [applyToExisting, setApplyToExisting] = useState(true);
+  const [totalProducts, setTotalProducts] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
 
-  const handleSaveRules = () => {
-    setIsSaving(true);
-    setTimeout(() => {
+  useEffect(() => {
+    catalogService.getPricingRules().then((rules) => {
+      if (rules) {
+        setGlobalMultiplier(rules.globalMultiplier);
+        setShippingBuffer(rules.shippingBuffer);
+        setCharmPricingEnabled(rules.charmPricingEnabled);
+        setMinMarginPercent(rules.minMarginPercent);
+      }
+    }).catch(() => {});
+
+    catalogService.getMappings(1, 1).then((res) => {
+      if (res?.total) setTotalProducts(res.total);
+    }).catch(() => {});
+  }, []);
+
+  const handleApplyStrategy = (strat: PricingStrategy) => {
+    setGlobalMultiplier(strat.multiplier);
+    setShippingBuffer(strat.buffer);
+    setMinMarginPercent(strat.minMargin);
+    showToast('info', `${strat.name} Selected`, `Applied ${strat.multiplier}x multiplier and $${strat.buffer.toFixed(2)} buffer.`);
+  };
+
+  const handleSaveRules = async () => {
+    try {
+      setIsSaving(true);
+      const res = await catalogService.savePricingRules({
+        globalMultiplier,
+        shippingBuffer,
+        charmPricingEnabled,
+        minMarginPercent,
+        applyToExistingMappings: applyToExisting,
+      });
+
+      const updatedText = res.updatedCount !== undefined
+        ? `Recalculated & updated prices for ${res.updatedCount} active catalog items!`
+        : 'Pricing rules updated.';
+
+      showToast(
+        'success',
+        'Pricing Rules Saved',
+        applyToExisting ? updatedText : 'Saved to database for upcoming product imports.'
+      );
+    } catch (err: any) {
+      showToast('error', 'Save Failed', err.message || 'Unable to save pricing rules.');
+    } finally {
       setIsSaving(false);
-      showToast('success', 'Rules Applied', 'Global markup rules and charm pricing applied to all unmapped catalog items.');
-    }, 800);
+    }
   };
 
   return (
     <PageContainer
-      title="Global Pricing Formula & Markup Rules"
-      subtitle="Configure default retail markup multipliers, shipping buffers, and psychological charm pricing"
-      action={
-        <Button variant="primary" size="sm" onClick={handleSaveRules} isLoading={isSaving}>
-          <Save className="w-3.5 h-3.5" />
-          Save Global Formula
-        </Button>
-      }
+      title="Pricing Rules & Profit Engine"
+      subtitle="Configure automated retail markups, shipping cushions, and charm pricing for your store products"
     >
+      <PricingHowItWorks />
+
+      <PricingStrategyPresets
+        currentMultiplier={globalMultiplier}
+        currentBuffer={shippingBuffer}
+        onApplyStrategy={handleApplyStrategy}
+      />
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <PricingCalculator
-            initialBaseCost={12.0}
-            initialShippingCost={4.2}
-            initialMultiplier={globalMultiplier}
-            initialBuffer={shippingBuffer}
+        <div className="lg:col-span-2 space-y-4">
+          <PricingSimulatorCard
+            multiplier={globalMultiplier}
+            buffer={shippingBuffer}
+            charmPricing={charmPricingEnabled}
+            minMarginPercent={minMarginPercent}
           />
-
-          <Card className="space-y-4">
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-teal-600" />
-              Formula Breakdown & Safety Thresholds
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                <p className="text-xs font-bold text-slate-800">Global Markup Multiplier</p>
-                <p className="text-xs text-slate-600">
-                  Applied as <span className="text-teal-700 font-mono font-bold">Cost × {globalMultiplier}x</span> to cover ad spend (ROAS) and overheads.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                <p className="text-xs font-bold text-slate-800">Shipping Buffer ($ USD)</p>
-                <p className="text-xs text-slate-600">
-                  Fixed <span className="text-teal-700 font-mono font-bold">+${shippingBuffer.toFixed(2)}</span> buffer added to guard against weight discrepancies and remote area surcharges.
-                </p>
-              </div>
-            </div>
-          </Card>
         </div>
 
-        <div className="space-y-6">
-          <Card className="space-y-4">
-            <h3 className="text-sm font-bold text-slate-900">Default Rule Parameters</h3>
-
-            <div className="space-y-4">
-              <Input
-                label="Default Markup Multiplier (x)"
-                type="number"
-                step="0.1"
-                value={globalMultiplier}
-                onChange={(e) => setGlobalMultiplier(Number(e.target.value))}
-              />
-
-              <Input
-                label="Safety Shipping Buffer ($ USD)"
-                type="number"
-                step="0.5"
-                value={shippingBuffer}
-                onChange={(e) => setShippingBuffer(Number(e.target.value))}
-              />
-
-              <Input
-                label="Minimum Acceptable Margin (%)"
-                type="number"
-                step="1"
-                value={minMarginPercent}
-                onChange={(e) => setMinMarginPercent(Number(e.target.value))}
-                helperText="Orders with margins below this trigger MANUAL_REVIEW"
-              />
-
-              <div className="pt-2">
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={charmPricingEnabled}
-                    onChange={(e) => setCharmPricingEnabled(e.target.checked)}
-                    className="w-4 h-4 rounded text-teal-600 focus:ring-teal-500 bg-white border-slate-300"
-                  />
-                  <div>
-                    <span className="text-xs font-bold text-slate-800">Charm Pricing ($0.99 ending)</span>
-                    <p className="text-[11px] text-slate-500">Automatically round $32.40 → $32.99</p>
-                  </div>
-                </label>
-              </div>
-            </div>
-          </Card>
+        <div>
+          <PricingSettingsForm
+            multiplier={globalMultiplier}
+            onMultiplierChange={setGlobalMultiplier}
+            buffer={shippingBuffer}
+            onBufferChange={setShippingBuffer}
+            charmPricing={charmPricingEnabled}
+            onCharmPricingChange={setCharmPricingEnabled}
+            minMargin={minMarginPercent}
+            onMinMarginChange={setMinMarginPercent}
+            applyToExisting={applyToExisting}
+            onApplyToExistingChange={setApplyToExisting}
+            totalProducts={totalProducts}
+            onSave={handleSaveRules}
+            isSaving={isSaving}
+          />
         </div>
       </div>
     </PageContainer>

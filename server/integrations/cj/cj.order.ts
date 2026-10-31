@@ -3,14 +3,21 @@ import { CJCreateOrderPayload, CJOrderResponse, CJTrackingInfo } from '../../typ
 import { logger } from '../../utils/logger.js';
 
 export class CJOrderService {
-
-  async createOrder(payload: CJCreateOrderPayload): Promise<CJOrderResponse> {
+  async createOrder(payload: CJCreateOrderPayload & { isSandbox?: number }): Promise<CJOrderResponse> {
     try {
-      logger.info({ orderNumber: payload.orderNumber }, 'Submitting order to CJ Dropshipping');
+      logger.info({ orderNumber: payload.orderNumber }, 'Submitting order to CJ Dropshipping via createOrderV2');
+      const orderData = {
+        ...payload,
+        fromCountryCode: payload.fromCountryCode || 'CN',
+        logisticName: payload.logisticName || 'CJPacket Fast US',
+        payType: payload.payType !== undefined ? payload.payType : 3,
+        isSandbox: payload.isSandbox !== undefined ? payload.isSandbox : 1,
+      };
+
       const response = await cjClient.request<CJOrderResponse>(
-        '/shopping/order/createOrder',
+        '/shopping/order/createOrderV2',
         'POST',
-        payload
+        orderData
       );
       return response;
     } catch (error: any) {
@@ -19,12 +26,31 @@ export class CJOrderService {
     }
   }
 
+  async getOrderDetail(orderId: string): Promise<any> {
+    try {
+      logger.info({ orderId }, 'Fetching live CJ order details via /shopping/order/getOrderDetail');
+      const response = await cjClient.request('/shopping/order/getOrderDetail', 'GET', undefined, { orderId });
+      return response?.data || null;
+    } catch (error: any) {
+      logger.error({ orderId, error: error.message }, 'Failed to fetch CJ order details');
+      return null;
+    }
+  }
+
+  async getBalance() {
+    try {
+      const response = await cjClient.request('/shopping/pay/getBalance', 'GET');
+      return response?.data || null;
+    } catch (error: any) {
+      logger.error({ error: error.message }, 'Failed to fetch CJ wallet balance');
+      return null;
+    }
+  }
+
   async cancelOrder(orderId: string): Promise<any> {
     try {
-      logger.info({ orderId }, 'Cancelling order in CJ Dropshipping');
-      const response = await cjClient.request('/shopping/order/cancelOrder', 'POST', {
-        orderId,
-      });
+      logger.info({ orderId }, 'Cancelling order in CJ Dropshipping via DELETE /shopping/order/deleteOrder');
+      const response = await cjClient.request('/shopping/order/deleteOrder', 'DELETE', undefined, { orderId });
       return response;
     } catch (error: any) {
       logger.error({ error: error.message, orderId }, 'Failed to cancel CJ order');
@@ -34,11 +60,19 @@ export class CJOrderService {
 
   async getTrackingInfo(orderId: string): Promise<CJTrackingInfo | null> {
     try {
-      const response = await cjClient.request('/logistic/order/queryByOrderNumber', 'GET', undefined, {
-        orderId,
-      });
+      const detail = await this.getOrderDetail(orderId);
+      if (detail && detail.trackNumber) {
+        return {
+          orderId,
+          trackingNumber: detail.trackNumber,
+          logisticName: detail.logisticName || detail.trackingProvider || 'USPS',
+          shippingStatus: detail.orderStatus || 'IN_TRANSIT',
+          deliveryDate: detail.outWarehouseTime || undefined,
+        };
+      }
 
-      if (response && response.data) {
+      const response = await cjClient.request('/logistic/order/queryByOrderNumber', 'GET', undefined, { orderId });
+      if (response && response.data && response.data.trackingNumber) {
         return {
           orderId,
           trackingNumber: response.data.trackingNumber,

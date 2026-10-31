@@ -5,29 +5,53 @@ import { useOrderDetail } from '../hooks/useOrderDetail.js';
 import { OrderTimeline } from '../components/modules/orders/OrderTimeline.js';
 import { AddressEditorModal } from '../components/modules/orders/AddressEditorModal.js';
 import { ManualRetryModal } from '../components/modules/orders/ManualRetryModal.js';
+import { CancelOrderModal } from '../components/modules/orders/CancelOrderModal.js';
+import { OrderItemsCard } from '../components/modules/orders/OrderItemsCard.js';
+import { OrderShippingAddressCard } from '../components/modules/orders/OrderShippingAddressCard.js';
 import { Card } from '../components/common/Card.js';
 import { Badge } from '../components/common/Badge.js';
 import { Button } from '../components/common/Button.js';
-import { formatCurrency } from '../utils/formatCurrency.js';
 import { formatDate } from '../utils/formatDate.js';
-import {
-  ArrowLeft,
-  MapPin,
-  Edit2,
-  RotateCcw,
-  Code,
-  PackageCheck,
-  ShieldCheck,
-} from 'lucide-react';
+import { orderService } from '../services/orderService.js';
+import { useNotification } from '../context/NotificationContext.js';
+import { OrderHoldBanner } from '../components/modules/orders/OrderHoldBanner.js';
+import { ArrowLeft, SlidersHorizontal, RefreshCw, Ban } from 'lucide-react';
 
 export const OrderDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { showToast } = useNotification();
   const { order, loading, refresh } = useOrderDetail(id);
 
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [isRetryModalOpen, setIsRetryModalOpen] = useState(false);
-  const [showRawPayload, setShowRawPayload] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [isReleasing, setIsReleasing] = useState(false);
+
+  const handleSyncCj = async () => {
+    if (!order) return;
+    try {
+      setIsSyncing(true);
+      const updated = await orderService.syncCjStatus(order.id);
+      showToast('success', 'CJ Status Synced', `Live status: ${updated.status}`);
+      await refresh();
+    } catch (err: any) {
+      showToast('error', 'Sync Failed', err.message);
+    } finally { setIsSyncing(false); }
+  };
+
+  const handleReleaseNow = async () => {
+    if (!order) return;
+    try {
+      setIsReleasing(true);
+      await orderService.manualOverride({ orderId: order.id, action: 'RELEASE_NOW' });
+      showToast('success', 'Dispatched to Supplier', 'Hold buffer released. Sent to CJ Dropshipping.');
+      await refresh();
+    } catch (err: any) {
+      showToast('error', 'Release Failed', err.message);
+    } finally { setIsReleasing(false); }
+  };
 
   if (loading) {
     return (
@@ -50,133 +74,67 @@ export const OrderDetailPage: React.FC = () => {
     );
   }
 
+  const isHold = order.status === 'PENDING_HOLD';
+  const canSync = ['DISPATCHED_TO_SUPPLIER', 'SUPPLIER_PROCESSING', 'SHIPPED'].includes(order.status);
+  const canCancel = !['CANCELLED', 'DELIVERED'].includes(order.status);
+
   return (
     <PageContainer
       title={`Order ${order.shopifyOrderNumber}`}
-      subtitle={`Created ${formatDate(order.shopifyCreatedAt)} • Shopify ID: ${order.shopifyOrderId}`}
+      subtitle={`Placed on ${formatDate(order.shopifyCreatedAt)}`}
       action={
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={() => navigate('/admin/orders')}>
             <ArrowLeft className="w-3.5 h-3.5" />
-            Back to Queue
+            Back to Orders
           </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setIsRetryModalOpen(true)}
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            Manual Override
+          {canSync && (
+            <Button variant="outline" size="sm" isLoading={isSyncing} onClick={handleSyncCj}>
+              <RefreshCw className="w-3.5 h-3.5" />
+              Sync Tracking
+            </Button>
+          )}
+          <Button variant="secondary" size="sm" onClick={() => setIsRetryModalOpen(true)}>
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            Manage Actions
           </Button>
+          {canCancel && (
+            <Button variant="danger" size="sm" onClick={() => setIsCancelModalOpen(true)}>
+              <Ban className="w-3.5 h-3.5" />
+              Cancel Order
+            </Button>
+          )}
         </div>
       }
     >
+      {isHold && (
+        <OrderHoldBanner
+          holdExpiresAt={order.holdExpiresAt}
+          onReleaseNow={handleReleaseNow}
+          isReleasing={isReleasing}
+          onEditAddress={() => setIsAddressModalOpen(true)}
+        />
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <Card className="space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <PackageCheck className="w-4 h-4 text-teal-600" />
-                Line Items & SKU Mappings ({order.items?.length || 0})
-              </h3>
-              <span className="text-xs font-mono text-teal-700 font-bold">
-                Total: {formatCurrency(order.totalPrice, order.currency)}
-              </span>
-            </div>
+          <OrderItemsCard items={order.items} totalPrice={order.totalPrice} currency={order.currency} />
 
-            <div className="divide-y divide-slate-100">
-              {order.items?.map((item) => (
-                <div key={item.id} className="py-3.5 flex items-start justify-between gap-4">
-                  <div className="space-y-1">
-                    <p className="text-sm font-bold text-slate-900">{item.title}</p>
-                    <div className="flex items-center gap-2 text-xs">
-                      <span className="font-mono text-slate-500">Store SKU: {item.storeSku}</span>
-                      {item.skuMapping ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
-                          <ShieldCheck className="w-3 h-3 text-teal-600" />
-                          Mapped: {item.skuMapping.primarySupplierSku}
-                        </span>
-                      ) : (
-                        <span className="text-[11px] font-semibold text-rose-800 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
-                          Unmapped SKU
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-slate-900 font-mono">
-                      {formatCurrency(item.price)}
-                    </p>
-                    <p className="text-xs text-slate-500">Qty: {item.quantity}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          <Card className="space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-teal-600" />
-                US Customer Shipping Address
-              </h3>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsAddressModalOpen(true)}
-                className="text-xs py-1"
-              >
-                <Edit2 className="w-3 h-3" />
-                Edit Address
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-              <div>
-                <p className="text-slate-500 uppercase font-semibold text-[10px]">Recipient</p>
-                <p className="text-sm font-bold text-slate-900 mt-0.5">{order.shippingName}</p>
-                <p className="text-slate-600 mt-0.5">{order.customerEmail}</p>
-                <p className="text-slate-500 font-mono mt-0.5">{order.customerPhone || 'No Phone'}</p>
-              </div>
-
-              <div>
-                <p className="text-slate-500 uppercase font-semibold text-[10px]">Street & City</p>
-                <p className="text-slate-800 mt-0.5 font-medium">{order.shippingAddress1}</p>
-                {order.shippingAddress2 && (
-                  <p className="text-slate-500 font-medium">{order.shippingAddress2}</p>
-                )}
-                <p className="text-slate-900 mt-0.5 font-bold">
-                  {order.shippingCity}, {order.shippingProvince} {order.shippingZip}
-                </p>
-                <p className="text-slate-500">{order.shippingCountry} ({order.shippingCountryCode})</p>
-              </div>
-            </div>
-          </Card>
-
-          <div className="pt-2">
-            <button
-              onClick={() => setShowRawPayload(!showRawPayload)}
-              className="text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1.5"
-            >
-              <Code className="w-4 h-4" />
-              {showRawPayload ? 'Hide' : 'Inspect'} Raw Backend Record JSON
-            </button>
-            {showRawPayload && (
-              <pre className="mt-2 p-4 rounded-xl bg-slate-900 text-teal-300 text-[11px] font-mono overflow-x-auto max-h-96 shadow-inner">
-                {JSON.stringify(order, null, 2)}
-              </pre>
-            )}
-          </div>
+          <OrderShippingAddressCard
+            shippingName={order.shippingName} customerEmail={order.customerEmail} customerPhone={order.customerPhone}
+            shippingAddress1={order.shippingAddress1} shippingAddress2={order.shippingAddress2} shippingCity={order.shippingCity}
+            shippingProvince={order.shippingProvince} shippingZip={order.shippingZip}
+            shippingCountry={order.shippingCountry} shippingCountryCode={order.shippingCountryCode}
+            onEdit={() => setIsAddressModalOpen(true)}
+          />
         </div>
 
         <div className="space-y-6">
           <Card className="space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-sm font-bold text-slate-900">Order Pipeline State</h3>
+              <h3 className="text-sm font-bold text-slate-900">Order Status</h3>
               <Badge status={order.status} />
             </div>
-
             <OrderTimeline order={order} />
           </Card>
         </div>
@@ -187,17 +145,12 @@ export const OrderDetailPage: React.FC = () => {
         onClose={() => setIsAddressModalOpen(false)}
         orderId={order.id}
         initialAddress={{
-          shippingName: order.shippingName,
-          shippingAddress1: order.shippingAddress1,
-          shippingAddress2: order.shippingAddress2,
-          shippingCity: order.shippingCity,
-          shippingProvince: order.shippingProvince,
-          shippingZip: order.shippingZip,
+          shippingName: order.shippingName, shippingAddress1: order.shippingAddress1,
+          shippingAddress2: order.shippingAddress2, shippingCity: order.shippingCity,
+          shippingProvince: order.shippingProvince, shippingZip: order.shippingZip,
           customerPhone: order.customerPhone,
         }}
-        onSave={async () => {
-          refresh();
-        }}
+        onSave={async (data) => { await orderService.updateAddress(order.id, data); await refresh(); }}
       />
 
       <ManualRetryModal
@@ -205,7 +158,18 @@ export const OrderDetailPage: React.FC = () => {
         onClose={() => setIsRetryModalOpen(false)}
         orderId={order.id}
         orderNumber={order.shopifyOrderNumber}
+        orderStatus={order.status}
+        holdExpiresAt={order.holdExpiresAt}
         currentSupplier={order.supplierType}
+        onSuccess={refresh}
+      />
+
+      <CancelOrderModal
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+        orderId={order.id}
+        orderNumber={order.shopifyOrderNumber}
+        supplierOrderId={order.supplierOrderId}
         onSuccess={refresh}
       />
     </PageContainer>

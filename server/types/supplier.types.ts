@@ -5,9 +5,15 @@ export interface CJCreateOrderPayload {
   shippingProvince: string;
   shippingCity: string;
   shippingAddress: string;
+  shippingAddress2?: string;
   shippingCustomerName: string;
   shippingZip: string;
   shippingPhone: string;
+  email?: string;
+  fromCountryCode?: string;
+  logisticName?: string;
+  payType?: number;
+  isSandbox?: number;
   remark?: string;
   products: Array<{
     vid?: string;
@@ -22,9 +28,13 @@ export interface CJOrderResponse {
   message: string;
   data?: {
     orderId: string;
-    orderNum: string;
-    orderAmount: number;
-    orderStatus: string;
+    orderNum?: string;
+    orderNumber?: string;
+    orderAmount?: number;
+    postageAmount?: number;
+    productAmount?: number;
+    orderStatus?: string;
+    cjOrderCode?: string;
   };
 }
 
@@ -38,6 +48,8 @@ export interface CJTrackingInfo {
 
 export interface CJSourcingQueryPayload {
   productUrl: string;
+  productName?: string;
+  productImage?: string;
   targetPrice?: number;
   estimatedDailyOrders?: number;
   notes?: string;
@@ -68,7 +80,6 @@ export interface ZendropOrderResponse {
   status: string;
   total: number;
   error?: string;
-
   id?: string;
   fulfillment_status?: string;
   tracking_number?: string | null;

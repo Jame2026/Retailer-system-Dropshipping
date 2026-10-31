@@ -10,8 +10,24 @@ export function useOrders(initialFilters: OrderFilterParams = {}) {
   const [totalPages, setTotalPages] = useState(1);
   const [status, setStatus] = useState<string>(initialFilters.status || '');
   const [search, setSearch] = useState<string>(initialFilters.search || '');
+  const [counts, setCounts] = useState<Record<string, number>>({});
+  const [totalRevenue, setTotalRevenue] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (initialFilters.status !== undefined && initialFilters.status !== status) {
+      setStatus(initialFilters.status);
+      setPage(1);
+    }
+  }, [initialFilters.status]);
+
+  useEffect(() => {
+    if (initialFilters.search !== undefined && initialFilters.search !== search) {
+      setSearch(initialFilters.search);
+      setPage(1);
+    }
+  }, [initialFilters.search]);
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -27,6 +43,8 @@ export function useOrders(initialFilters: OrderFilterParams = {}) {
       setOrders(data.orders || []);
       setTotal(data.total || 0);
       setTotalPages(data.totalPages || 1);
+      if (data.counts) setCounts(data.counts);
+      if (data.totalRevenue !== undefined) setTotalRevenue(data.totalRevenue);
     } catch (err: any) {
       setError(err.message || 'Failed to load orders');
     } finally {
@@ -49,6 +67,8 @@ export function useOrders(initialFilters: OrderFilterParams = {}) {
     setStatus,
     search,
     setSearch,
+    counts,
+    totalRevenue,
     loading,
     error,
     refresh: fetchOrders,

@@ -47,3 +47,14 @@ export const manualOrderOverrideSchema = z.object({
   targetSupplier: z.enum(['CJ', 'ZENDROP', 'CUSTOM']).optional(),
   notes: z.string().optional(),
 });
+
+export const updateOrderAddressSchema = z.object({
+  shippingName: z.string().min(1, 'Name is required'),
+  shippingAddress1: z.string().min(1, 'Address line 1 is required'),
+  shippingAddress2: z.string().nullable().optional(),
+  shippingCity: z.string().min(1, 'City is required'),
+  shippingProvince: z.string().min(1, 'Province is required'),
+  shippingZip: z.string().min(5, 'ZIP code is required'),
+  customerPhone: z.string().nullable().optional(),
+});
+

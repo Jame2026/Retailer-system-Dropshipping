@@ -3,10 +3,15 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext.js';
 import { NotificationProvider } from './context/NotificationContext.js';
 import { CartProvider } from './context/CartContext.js';
+import { SavedProductsProvider } from './context/SavedProductsContext.js';
 import { ProtectedRoute } from './components/auth/ProtectedRoute.js';
+
+import { AdminLayout } from './components/layout/AdminLayout.js';
+import { StorefrontLayout } from './components/layout/StorefrontLayout.js';
 
 import { StorefrontHomePage } from './pages/storefront/StorefrontHomePage.js';
 import { StorefrontCatalogPage } from './pages/storefront/StorefrontCatalogPage.js';
+import { UserPortalPage } from './pages/storefront/UserPortalPage.js';
 
 import { LoginPage } from './pages/LoginPage.js';
 import { AdminLoginPage } from './pages/AdminLoginPage.js';
@@ -18,6 +23,8 @@ import { OrderDetailPage } from './pages/OrderDetailPage.js';
 import { CatalogPage } from './pages/CatalogPage.js';
 import { PricingRulesPage } from './pages/PricingRulesPage.js';
 import { SourcingPage } from './pages/SourcingPage.js';
+import { CjProductsPage } from './pages/CjProductsPage.js';
+import { ShippingPage } from './pages/ShippingPage.js';
 import { SettingsPage } from './pages/SettingsPage.js';
 
 export const App: React.FC = () => {
@@ -25,133 +32,59 @@ export const App: React.FC = () => {
     <AuthProvider>
       <NotificationProvider>
         <CartProvider>
-          <BrowserRouter
-            future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-          >
-            <Routes>
-              <Route path="/" element={<StorefrontHomePage />} />
-              <Route path="/shop" element={<StorefrontCatalogPage />} />
+          <SavedProductsProvider>
+            <BrowserRouter
+              future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+            >
+              <Routes>
+                {/* Storefront Routes with Persistent Storefront Layout */}
+                <Route element={<StorefrontLayout />}>
+                  <Route path="/" element={<StorefrontHomePage />} />
+                  <Route path="/shop" element={<StorefrontCatalogPage />} />
+                  <Route path="/user" element={<UserPortalPage />} />
+                  <Route path="/client" element={<UserPortalPage />} />
+                </Route>
 
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/admin/login" element={<AdminLoginPage />} />
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <ProfilePage />
-                  </ProtectedRoute>
-                }
-              />
+                {/* Standalone Authentication Routes */}
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/admin/login" element={<AdminLoginPage />} />
 
-              <Route
-                path="/admin"
-                element={
-                  <ProtectedRoute>
-                    <DashboardPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/orders"
-                element={
-                  <ProtectedRoute>
-                    <OrdersPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/orders/:id"
-                element={
-                  <ProtectedRoute>
-                    <OrderDetailPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/catalog"
-                element={
-                  <ProtectedRoute>
-                    <CatalogPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/pricing"
-                element={
-                  <ProtectedRoute>
-                    <PricingRulesPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/sourcing"
-                element={
-                  <ProtectedRoute>
-                    <SourcingPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/settings"
-                element={
-                  <ProtectedRoute>
-                    <SettingsPage />
-                  </ProtectedRoute>
-                }
-              />
+                {/* Protected Admin Routes with Persistent Admin Layout */}
+                <Route
+                  element={
+                    <ProtectedRoute>
+                      <AdminLayout />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route path="/profile" element={<ProfilePage />} />
+                  <Route path="/admin" element={<DashboardPage />} />
+                  <Route path="/admin/orders" element={<OrdersPage />} />
+                  <Route path="/admin/orders/:id" element={<OrderDetailPage />} />
+                  <Route path="/admin/catalog" element={<CatalogPage />} />
+                  <Route path="/admin/pricing" element={<PricingRulesPage />} />
+                  <Route path="/admin/shipping" element={<ShippingPage />} />
+                  <Route path="/admin/sourcing" element={<SourcingPage />} />
+                  <Route path="/admin/products" element={<CjProductsPage />} />
+                  <Route path="/admin/cj-products" element={<CjProductsPage />} />
+                  <Route path="/admin/settings" element={<SettingsPage />} />
 
-              <Route
-                path="/orders"
-                element={
-                  <ProtectedRoute>
-                    <OrdersPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/orders/:id"
-                element={
-                  <ProtectedRoute>
-                    <OrderDetailPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/catalog"
-                element={
-                  <ProtectedRoute>
-                    <CatalogPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/pricing"
-                element={
-                  <ProtectedRoute>
-                    <PricingRulesPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/sourcing"
-                element={
-                  <ProtectedRoute>
-                    <SourcingPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/settings"
-                element={
-                  <ProtectedRoute>
-                    <SettingsPage />
-                  </ProtectedRoute>
-                }
-              />
+                  {/* Legacy / Direct paths */}
+                  <Route path="/orders" element={<OrdersPage />} />
+                  <Route path="/orders/:id" element={<OrderDetailPage />} />
+                  <Route path="/catalog" element={<CatalogPage />} />
+                  <Route path="/pricing" element={<PricingRulesPage />} />
+                  <Route path="/shipping" element={<ShippingPage />} />
+                  <Route path="/sourcing" element={<SourcingPage />} />
+                  <Route path="/products" element={<CjProductsPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                </Route>
 
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </BrowserRouter>
+                {/* Fallback */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </BrowserRouter>
+          </SavedProductsProvider>
         </CartProvider>
       </NotificationProvider>
     </AuthProvider>
@@ -159,3 +92,4 @@ export const App: React.FC = () => {
 };
 
 export default App;
+

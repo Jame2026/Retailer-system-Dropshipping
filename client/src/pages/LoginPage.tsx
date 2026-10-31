@@ -129,7 +129,7 @@ export const LoginPage: React.FC = () => {
             <ShieldCheck className="w-7 h-7 text-teal-400" />
           </div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-            Retailer Dropshipping Admin
+            Admin Sign In
           </h1>
           <p className="text-sm text-slate-400">{STAGE_SUBTITLE[stage]}</p>
         </div>
@@ -175,10 +175,10 @@ export const LoginPage: React.FC = () => {
         </Card>
 
         <p className="text-center text-[11px] text-slate-600">
-          Rate-limited &amp; monitored session · OTP codes rotate every 30 seconds
+          Secure login with two-factor authentication
         </p>
         <p className="text-center text-[11px] text-slate-500">
-          First time here?{' '}
+          Need an account?{' '}
           <Link className="font-semibold text-teal-600 hover:text-teal-700" to="/admin/login">
             Create an admin account
           </Link>

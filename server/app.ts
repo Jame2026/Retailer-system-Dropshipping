@@ -13,7 +13,7 @@ export function createApp(): Express {
     express.json({
       limit: '1mb',
       verify: (req: RequestWithRawBody, res: Response, buf: Buffer) => {
-        if (req.originalUrl.startsWith('/webhooks/shopify')) {
+        if (req.originalUrl.startsWith('/webhooks/shopify') || req.originalUrl.startsWith('/webhooks/cj')) {
           req.rawBody = buf;
         }
       },

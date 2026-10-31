@@ -13,5 +13,7 @@ router.post('/mappings', authAdmin, catalogController.saveMapping.bind(catalogCo
 router.delete('/mappings/:id', authAdmin, catalogController.deleteMapping.bind(catalogController));
 
 router.post('/pricing-preview', catalogController.calculatePricePreview.bind(catalogController));
+router.get('/pricing-rules', catalogController.getPricingRules.bind(catalogController));
+router.post('/pricing-rules', authAdmin, catalogController.savePricingRules.bind(catalogController));
 
 export default router;

@@ -24,6 +24,7 @@ export interface OrderItem {
   storeSku: string;
   quantity: number;
   price: number;
+  imageUrl?: string | null;
   skuMapping?: {
     id: string;
     productName: string;

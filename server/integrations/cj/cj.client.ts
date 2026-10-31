@@ -1,16 +1,22 @@
 import axios, { AxiosInstance } from 'axios';
 import { env } from '../../config/env.js';
 import { logger } from '../../utils/logger.js';
+import { CJRateLimiter } from './cj.limiter.js';
+import { getCjMockResponse } from './cj.sandbox.js';
 
 export class CJClient {
   private client: AxiosInstance;
   private accessToken: string | null = null;
+  private refreshToken: string | null = null;
+  private openId: string | number | null = null;
   private tokenExpiresAt: number = 0;
+  private pendingTokenPromise: Promise<string> | null = null;
+  private limiter: CJRateLimiter = new CJRateLimiter(1050);
 
   constructor() {
     this.client = axios.create({
       baseURL: env.CJ_BASE_URL,
-      timeout: 10000,
+      timeout: 35000,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -25,56 +31,118 @@ export class CJClient {
     );
   }
 
-  async getAccessToken(): Promise<string> {
+  getOpenId() {
+    return this.openId;
+  }
+
+  private async waitRateLimit(): Promise<void> {
+    return this.limiter.wait();
+  }
+
+  async getAccessToken(forceRefresh = false): Promise<string> {
     if (this.isSandbox()) {
       return 'sandbox-cj-jwt-token-active';
     }
 
-    if (this.accessToken && Date.now() < this.tokenExpiresAt - 60000) {
+    if (!forceRefresh && this.accessToken && Date.now() < this.tokenExpiresAt - 60000) {
       return this.accessToken;
     }
 
+    if (this.pendingTokenPromise) {
+      return this.pendingTokenPromise;
+    }
+
+    this.pendingTokenPromise = (async () => {
+      if (forceRefresh && this.refreshToken) {
+        const refreshed = await this.refreshAccessToken();
+        if (refreshed) return refreshed;
+      }
+
+      try {
+        await this.waitRateLimit();
+        logger.info('Authenticating with CJ Dropshipping API 2.0 (POST /authentication/getAccessToken)...');
+        const response = await axios.post(
+          `${env.CJ_BASE_URL}/authentication/getAccessToken`,
+          { apiKey: env.CJ_API_KEY },
+          { headers: { 'Content-Type': 'application/json' }, timeout: 35000 }
+        );
+
+        if (response.data?.result && response.data?.data?.accessToken) {
+          this.accessToken = String(response.data.data.accessToken);
+          this.refreshToken = response.data.data.refreshToken ? String(response.data.data.refreshToken) : null;
+          this.openId = response.data.data.openId || null;
+
+          const expiresInMs = response.data.data.accessTokenExpiryDate
+            ? new Date(response.data.data.accessTokenExpiryDate).getTime() - Date.now()
+            : 180 * 24 * 3600 * 1000;
+          this.tokenExpiresAt = Date.now() + Math.max(expiresInMs, 3600000);
+
+          logger.info(
+            { openId: this.openId, expiry: response.data.data.accessTokenExpiryDate },
+            '✅ CJ Dropshipping access token acquired and cached'
+          );
+          return this.accessToken;
+        }
+
+        logger.warn({ data: response.data }, 'CJ token endpoint returned without accessToken');
+        return env.CJ_API_KEY;
+      } catch (error: any) {
+        logger.error(
+          { error: error.response?.data || error.message },
+          'Failed to obtain CJ Access Token, falling back to local simulation'
+        );
+        return 'sandbox-cj-jwt-token-active';
+      }
+    })().finally(() => {
+      this.pendingTokenPromise = null;
+    });
+
+    return this.pendingTokenPromise;
+  }
+
+  async refreshAccessToken(): Promise<string | null> {
+    if (!this.refreshToken) return null;
+
     try {
-      logger.info('Refreshing CJ Dropshipping API access token...');
+      await this.waitRateLimit();
+      logger.info('Refreshing CJ Dropshipping access token (POST /authentication/refreshAccessToken)...');
       const response = await axios.post(
-        `${env.CJ_BASE_URL}/authentication/getAccessToken`,
-        {
-          email: env.CJ_API_EMAIL,
-          apiKey: env.CJ_API_KEY,
-        },
-        { headers: { 'Content-Type': 'application/json' } }
+        `${env.CJ_BASE_URL}/authentication/refreshAccessToken`,
+        { refreshToken: this.refreshToken },
+        { headers: { 'Content-Type': 'application/json' }, timeout: 35000 }
       );
 
       if (response.data?.result && response.data?.data?.accessToken) {
         this.accessToken = String(response.data.data.accessToken);
-        const expiresInSec = response.data.data.accessTokenExpiryDate
+        if (response.data.data.refreshToken) {
+          this.refreshToken = String(response.data.data.refreshToken);
+        }
+        const expiresInMs = response.data.data.accessTokenExpiryDate
           ? new Date(response.data.data.accessTokenExpiryDate).getTime() - Date.now()
-          : 14 * 24 * 3600 * 1000;
-        this.tokenExpiresAt = Date.now() + Math.max(expiresInSec, 3600000);
+          : 180 * 24 * 3600 * 1000;
+        this.tokenExpiresAt = Date.now() + Math.max(expiresInMs, 3600000);
+        logger.info('✅ CJ Dropshipping access token refreshed successfully');
         return this.accessToken;
       }
-
-      return env.CJ_API_KEY;
     } catch (error: any) {
-      logger.warn(
-        { error: error.message },
-        'CJ Access Token endpoint warning, utilizing local sandbox simulation'
-      );
-      return 'sandbox-cj-jwt-token-active';
+      logger.warn({ error: error.message }, 'CJ token refresh failed, will re-authenticate');
     }
+    return null;
   }
 
   async request<T = any>(
     endpoint: string,
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
     data?: any,
-    params?: any
+    params?: any,
+    retryCount = 0
   ): Promise<T> {
     if (this.isSandbox()) {
-      return this.getMockResponse(endpoint, data, params);
+      return getCjMockResponse(endpoint, data, params);
     }
 
-    const token = await this.getAccessToken();
+    let token = await this.getAccessToken();
+    await this.waitRateLimit();
 
     try {
       const response = await this.client.request({
@@ -82,171 +150,43 @@ export class CJClient {
         method,
         data,
         params,
-        headers: {
-          'CJ-Access-Token': token,
-        },
+        headers: { 'CJ-Access-Token': token },
       });
+
+      const code = response.data?.code;
+
+      if ([1600001, 1600002, 1600003].includes(code) && retryCount < 2) {
+        logger.warn({ code }, 'CJ token expired or invalid, auto-refreshing token...');
+        await this.getAccessToken(true);
+        return this.request<T>(endpoint, method, data, params, retryCount + 1);
+      }
+
+      if (code === 1600200 && retryCount < 3) {
+        const waitMs = 1200 * (retryCount + 1);
+        logger.warn({ endpoint, retry: retryCount + 1, waitMs }, 'CJ QPS rate limit reached (1600200), waiting...');
+        await new Promise((resolve) => setTimeout(resolve, waitMs));
+        return this.request<T>(endpoint, method, data, params, retryCount + 1);
+      }
+
+      if (code === 1600014) {
+        logger.error('CRITICAL: CJ API access suspended (code 1600014). Visit https://www.cjdropshipping.com/my.html#/authorize/APIStores to reactivate.');
+      } else if (code === 16900500) {
+        logger.warn('CJ API daily points exhausted (code 16900500). Points replenish every minute.');
+      }
 
       return response.data;
     } catch (error: any) {
-      logger.warn(
-        { endpoint, error: error.response?.data || error.message },
-        'CJ API network call failed, falling back to sandbox mock response'
-      );
-      return this.getMockResponse(endpoint, data, params);
+      if (retryCount < 2 && (error.code === 'ECONNABORTED' || error.response?.status === 429)) {
+        const waitMs = 1500 * (retryCount + 1);
+        logger.warn({ endpoint, retry: retryCount + 1, waitMs }, 'Transient network error or HTTP 429, retrying...');
+        await new Promise((resolve) => setTimeout(resolve, waitMs));
+        return this.request<T>(endpoint, method, data, params, retryCount + 1);
+      }
+
+      const errDetails = error.response?.data || error.message;
+      logger.error({ endpoint, error: errDetails }, 'CJ API network call failed');
+      throw new Error(`CJ API Error on ${endpoint}: ${typeof errDetails === 'object' ? JSON.stringify(errDetails) : errDetails}`);
     }
-  }
-
-  private getMockResponse(endpoint: string, data?: any, params?: any): any {
-    logger.info({ endpoint }, '🧪 [CJ Sandbox Mode] Generating simulated response');
-
-    if (endpoint.includes('/product/getCategory')) {
-      return {
-        result: true,
-        code: 200,
-        message: 'Success (Sandbox Mode)',
-        data: [
-          { categoryId: 'cat-1', categoryName: 'Clothings', categoryLevel: 1 },
-          { categoryId: 'cat-2', categoryName: 'Accessories', categoryLevel: 1 },
-          { categoryId: 'cat-3', categoryName: 'Footwear', categoryLevel: 1 },
-          { categoryId: 'cat-4', categoryName: 'Watches', categoryLevel: 1 },
-          { categoryId: 'cat-5', categoryName: 'Bags & Packs', categoryLevel: 1 },
-        ],
-      };
-    }
-
-    if (endpoint.includes('/product/globalWarehouseList')) {
-      return {
-        result: true,
-        code: 200,
-        message: 'Success (Sandbox Mode)',
-        data: [
-          { warehouseId: 'wh-us-east', warehouseName: 'US East (New Jersey) Warehouse', countryCode: 'US', shippingDays: '3-5' },
-          { warehouseId: 'wh-us-west', warehouseName: 'US West (California) Warehouse', countryCode: 'US', shippingDays: '3-5' },
-          { warehouseId: 'wh-eu-de', warehouseName: 'European (Frankfurt) Warehouse', countryCode: 'DE', shippingDays: '4-7' },
-          { warehouseId: 'wh-cn-sz', warehouseName: 'Shenzhen Global Hub', countryCode: 'CN', shippingDays: '7-12' },
-        ],
-      };
-    }
-
-    if (endpoint.includes('/product/listV2') || endpoint.includes('/product/list')) {
-      const mockList = [
-        {
-          pid: 'CJ-P-100234',
-          productName: 'Minimalist Stainless Steel Watch - Silver',
-          productSku: 'CJ-WATCH-SLV-9921',
-          sellPrice: 12.5,
-          productImage: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80',
-          categoryName: 'Accessories',
-          isNew: true,
-          isHot: true,
-        },
-        {
-          pid: 'CJ-P-55412',
-          productName: 'Waterproof Travel Crossbody Bag - Black',
-          productSku: 'CJ-BAG-BLK-4412',
-          sellPrice: 8.0,
-          productImage: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80',
-          categoryName: 'Clothings',
-          isNew: true,
-        },
-        {
-          pid: 'CJ-P-88192',
-          productName: 'Winter Parka Fleece Hooded Jacket - Camel',
-          productSku: 'CJ-JACKET-TAN-771',
-          sellPrice: 48.0,
-          productImage: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=600&q=80',
-          categoryName: 'Clothings',
-          isHot: true,
-        },
-      ];
-
-      return {
-        result: true,
-        code: 200,
-        message: 'Success (Sandbox Mode)',
-        data: {
-          list: mockList,
-          total: mockList.length,
-          pageNum: params?.pageNum || 1,
-          pageSize: params?.pageSize || 20,
-        },
-      };
-    }
-
-    if (endpoint.includes('/product/query')) {
-      const pid = params?.pid || 'CJ-P-100234';
-      return {
-        result: true,
-        code: 200,
-        message: 'Success (Sandbox Mode)',
-        data: {
-          pid,
-          productName: 'Minimalist Stainless Steel Watch - Silver',
-          productSku: 'CJ-WATCH-SLV-9921',
-          productImage: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80',
-          sellPrice: 12.5,
-          categoryName: 'Accessories',
-          variants: [
-            {
-              vid: 'CJ-V-9921',
-              pid,
-              variantSku: 'CJ-WATCH-SLV-9921-S',
-              variantName: 'Silver Dial / Steel Strap',
-              variantImage: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80',
-              variantPrice: 12.5,
-              inventory: 450,
-            },
-            {
-              vid: 'CJ-V-9922',
-              pid,
-              variantSku: 'CJ-WATCH-BLK-9922-S',
-              variantName: 'Matte Black Dial / Mesh Strap',
-              variantImage: 'https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=600&q=80',
-              variantPrice: 13.0,
-              inventory: 320,
-            },
-          ],
-        },
-      };
-    }
-
-    if (endpoint.includes('/shopping/order/createOrder')) {
-      const randomOrderId = `CJ-ORD-${Math.floor(10000000 + Math.random() * 90000000)}`;
-      return {
-        result: true,
-        code: 200,
-        message: 'Order created successfully in CJ Dropshipping Factory (Sandbox)',
-        data: {
-          orderId: randomOrderId,
-          orderNumber: randomOrderId,
-          status: 'SUCCESS',
-          totalAmount: 16.7,
-        },
-      };
-    }
-
-    if (endpoint.includes('/logistic/order/queryByOrderNumber') || endpoint.includes('/logistic/')) {
-      const randomTrack = `940011189956${Math.floor(10000000 + Math.random() * 90000000)}`;
-      return {
-        result: true,
-        code: 200,
-        message: 'Success (Sandbox Mode)',
-        data: {
-          trackingNumber: randomTrack,
-          logisticName: 'USPS Ground Advantage',
-          shippingStatus: 'IN_TRANSIT',
-          deliveryDate: new Date(Date.now() + 3 * 24 * 3600 * 1000).toISOString(),
-        },
-      };
-    }
-
-    return {
-      result: true,
-      code: 200,
-      message: 'Success (Sandbox Mode)',
-      data: { success: true },
-    };
   }
 }
 

@@ -2,7 +2,11 @@ import { Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import { prisma } from '../../database/client.js';
 import { logger } from '../../utils/logger.js';
-import { changePasswordSchema, updateAvatarSchema } from '../../validators/auth.validator.js';
+import {
+  changePasswordSchema,
+  updateAvatarSchema,
+  updateProfileSchema,
+} from '../../validators/auth.validator.js';
 import { AuthenticatedRequest } from '../../middleware/authAdmin.js';
 import { getCachedProfile, invalidateProfileCache } from '../../services/auth/admin.service.js';
 
@@ -92,6 +96,26 @@ export class AccountController {
       await prisma.adminUser.update({ where: { id: user.id }, data: { avatarUrl: null } });
       invalidateProfileCache(user.id);
       logger.info({ email: user.email }, 'Profile avatar removed');
+
+      const profile = publicProfile(await getCachedProfile(user.id));
+      return res.status(200).json({ success: true, data: profile });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async updateProfile(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const { name } = updateProfileSchema.parse(req.body);
+
+      const user = await prisma.adminUser.findUnique({ where: { id: req.user!.adminId } });
+      if (!user || !user.isActive) {
+        return res.status(404).json({ success: false, error: 'Account not found' });
+      }
+
+      await prisma.adminUser.update({ where: { id: user.id }, data: { name } });
+      invalidateProfileCache(user.id);
+      logger.info({ email: user.email, name }, 'Admin profile updated');
 
       const profile = publicProfile(await getCachedProfile(user.id));
       return res.status(200).json({ success: true, data: profile });

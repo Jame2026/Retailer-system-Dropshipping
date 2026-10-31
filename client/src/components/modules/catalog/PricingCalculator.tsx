@@ -75,9 +75,9 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
             <Calculator className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-slate-900">Dynamic Markup Formula Calculator</h3>
+            <h3 className="text-base font-bold text-slate-900">Price Calculator</h3>
             <p className="text-xs text-slate-500">
-              Formula: <span className="font-mono text-teal-700 font-bold">Selling Price = ((Cost + Shipping) × Multiplier) + Buffer</span>
+              Preview your retail price and profit per item
             </p>
           </div>
         </div>
@@ -85,28 +85,28 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Input
-          label="Base Product Cost ($)"
+          label="Product Cost ($)"
           type="number"
           step="0.01"
           value={baseCost}
           onChange={(e) => setBaseCost(Number(e.target.value))}
         />
         <Input
-          label="Est. Shipping Cost ($)"
+          label="Shipping Cost ($)"
           type="number"
           step="0.01"
           value={shippingCost}
           onChange={(e) => setShippingCost(Number(e.target.value))}
         />
         <Input
-          label="Markup Multiplier (x)"
+          label="Multiplier"
           type="number"
           step="0.1"
           value={multiplier}
           onChange={(e) => setMultiplier(Number(e.target.value))}
         />
         <Input
-          label="Shipping Buffer ($)"
+          label="Extra Shipping ($)"
           type="number"
           step="0.5"
           value={buffer}
@@ -117,24 +117,24 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
         <div className="p-4 rounded-2xl bg-teal-50 border border-teal-200">
           <div className="flex items-center justify-between text-teal-800 text-xs font-bold uppercase">
-            <span>Recommended Price</span>
+            <span>Selling Price</span>
             <DollarSign className="w-4 h-4 text-teal-600" />
           </div>
           <div className="text-2xl font-black text-slate-900 mt-1 font-mono">
             {formatCurrency(result.sellingPrice)}
           </div>
-          <p className="text-[11px] text-teal-700 mt-1">Suggested Shopify Retail Tag</p>
+          <p className="text-[11px] text-teal-700 mt-1">Customer retail price</p>
         </div>
 
         <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
           <div className="flex items-center justify-between text-slate-600 text-xs font-bold uppercase">
-            <span>Net Profit per Unit</span>
+            <span>Profit per Sale</span>
             <TrendingUp className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="text-2xl font-black text-emerald-700 mt-1 font-mono">
             {formatCurrency(result.profitMarginUsd)}
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">After total cost deduction</p>
+          <p className="text-[11px] text-slate-500 mt-1">Net profit in your pocket</p>
         </div>
 
         <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
@@ -145,7 +145,7 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
           <div className="text-2xl font-black text-indigo-700 mt-1 font-mono">
             {result.marginPercent.toFixed(1)}%
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">Gross Margin Percentage</p>
+          <p className="text-[11px] text-slate-500 mt-1">Margin percentage</p>
         </div>
       </div>
     </Card>

@@ -6,7 +6,7 @@ export const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 15000,
+  timeout: 45000,
 });
 
 apiClient.interceptors.request.use((config) => {
@@ -17,9 +17,28 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
+export function isRequestCanceled(error: any): boolean {
+  if (!error) return false;
+  return (
+    axios.isCancel(error) ||
+    error.name === 'CanceledError' ||
+    error.name === 'AbortError' ||
+    error.message === 'canceled' ||
+    error.code === 'ERR_CANCELED' ||
+    Boolean(error.isCanceled)
+  );
+}
+
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (isRequestCanceled(error)) {
+      const cancelErr = new Error('canceled');
+      cancelErr.name = 'CanceledError';
+      (cancelErr as any).isCanceled = true;
+      (cancelErr as any).code = 'ERR_CANCELED';
+      return Promise.reject(cancelErr);
+    }
     const message =
       error.response?.data?.error ||
       error.response?.data?.message ||

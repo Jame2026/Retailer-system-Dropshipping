@@ -89,4 +89,5 @@ export interface CreateSkuMappingDTO {
   backupShippingCost?: number;
   markupMultiplier?: number;
   shippingBufferUsd?: number;
+  calculatedSellingPrice?: number;
 }

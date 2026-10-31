@@ -55,6 +55,10 @@ export const updateAvatarSchema = z.object({
     .max(700_000, 'Avatar image is too large — the maximum is 500KB'),
 });
 
+export const updateProfileSchema = z.object({
+  name: z.string().trim().min(1, 'Name is required').max(100),
+});
+
 export const googleLoginSchema = z.object({
   credential: z.string().min(1, 'Google credential is required').max(8192),
 });

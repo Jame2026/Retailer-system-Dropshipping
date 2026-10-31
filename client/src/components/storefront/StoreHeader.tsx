@@ -1,11 +1,24 @@
 import React, { useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext.js';
-import { Search, ShoppingBag, User, Menu, X, Zap, LogOut } from 'lucide-react';
+import { useSavedProducts } from '../../context/SavedProductsContext.js';
+import { Search, ShoppingBag, Heart, User, Menu, X, Zap, LogOut } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.js';
+import { StoreMobileNav } from './StoreMobileNav.js';
+
+const NAV_LINKS = [
+  { label: 'HOME', path: '/' },
+  { label: 'SHOP ALL', path: '/shop' },
+  { label: 'TRENDING', path: '/shop?tag=Trending' },
+  { label: 'POPULAR', path: '/shop?tag=Popular' },
+  { label: 'CLOTHING', path: '/shop?category=Clothings' },
+  { label: 'SAVED', path: '/user' },
+  { label: 'CJ PRODUCTS', path: '/products' },
+];
 
 export const StoreHeader: React.FC = () => {
   const { totalItems, setIsCartOpen } = useCart();
+  const { totalSaved } = useSavedProducts();
   const { user, isAuthenticated, logout } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -19,21 +32,14 @@ export const StoreHeader: React.FC = () => {
     }
   };
 
-  const navLinks = [
-    { label: 'HOME', path: '/' },
-    { label: 'CLOTHINGS', path: '/shop?category=Clothings' },
-    { label: 'LOOKBOOK', path: '/shop?category=Lookbook' },
-    { label: 'FOOTWEAR', path: '/shop?category=Footwear' },
-    { label: 'ACCESSORIES', path: '/shop?category=Accessories' },
-    { label: 'POPULAR', path: '/shop?tag=Popular' },
-  ];
-
   const isLinkActive = (targetPath: string) => {
-    const currentFullPath = location.pathname + location.search;
-    if (targetPath === '/') {
-      return location.pathname === '/' && !location.search;
-    }
-    return currentFullPath.toLowerCase() === targetPath.toLowerCase();
+    const current = location.pathname + location.search;
+    return targetPath === '/' ? (location.pathname === '/' && !location.search) : current.toLowerCase() === targetPath.toLowerCase();
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
   };
 
   return (
@@ -41,12 +47,12 @@ export const StoreHeader: React.FC = () => {
       <div className="bg-slate-100 px-4 py-1.5 border-b border-slate-200 text-xs flex items-center justify-between text-slate-600">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></span>
-          <span className="font-medium">Fast US Delivery (3-5 Days) • Free Shipping on Orders over $50</span>
+          <span className="font-medium">Direct Factory Sourcing • Fast US Delivery (3-5 Days)</span>
         </div>
         <div className="hidden sm:flex items-center gap-4 text-[11px] text-slate-500">
           <span>USD ($)</span>
           <span>•</span>
-          <span>Help & Support: (800) 555-0199</span>
+          <span className="text-teal-700 font-semibold">CJ Dropshipping Verified</span>
         </div>
       </div>
 
@@ -56,12 +62,8 @@ export const StoreHeader: React.FC = () => {
             <Zap className="w-6 h-6 fill-current text-white" />
           </div>
           <div>
-            <span className="font-extrabold text-xl tracking-wider text-slate-900 font-serif uppercase">
-              VOISEN
-            </span>
-            <span className="block text-[9px] uppercase tracking-[0.25em] text-slate-500 font-bold -mt-1">
-              STORE FASHION
-            </span>
+            <span className="font-extrabold text-xl tracking-wider text-slate-900 font-serif uppercase">VOISEN</span>
+            <span className="block text-[9px] uppercase tracking-[0.25em] text-slate-500 font-bold -mt-1">STORE FASHION</span>
           </div>
         </NavLink>
 
@@ -81,17 +83,11 @@ export const StoreHeader: React.FC = () => {
           </button>
         </form>
 
-        <div className="flex items-center gap-5 shrink-0">
+        <div className="flex items-center gap-4 shrink-0">
           {isAuthenticated && user ? (
             <>
-              <Link
-                to="/profile"
-                className="hidden sm:flex items-center gap-2 text-xs text-slate-700 hover:text-teal-700 transition-colors"
-                title="View your profile"
-              >
-                <div className="p-2 rounded-full bg-teal-50 text-teal-700 border border-teal-200">
-                  <User className="w-4 h-4" />
-                </div>
+              <Link to="/profile" className="hidden sm:flex items-center gap-2 text-xs text-slate-700 hover:text-teal-700 transition-colors" title="View your profile">
+                <div className="p-2 rounded-full bg-teal-50 text-teal-700 border border-teal-200"><User className="w-4 h-4" /></div>
                 <div className="text-left leading-tight">
                   <p className="text-[10px] text-slate-400 font-medium">Welcome back!</p>
                   <p className="font-bold text-slate-800 truncate max-w-[10rem]">{user.name}</p>
@@ -99,33 +95,36 @@ export const StoreHeader: React.FC = () => {
               </Link>
               <button
                 type="button"
-                onClick={() => {
-                  logout();
-                  navigate('/');
-                }}
+                onClick={handleLogout}
                 title="Sign out"
                 aria-label="Sign out"
                 className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-full border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-colors"
               >
-                <LogOut className="w-3.5 h-3.5" />
-                Sign out
+                <LogOut className="w-3.5 h-3.5" /> Sign out
               </button>
             </>
           ) : (
-            <Link
-              to="/login"
-              className="hidden sm:flex items-center gap-2 text-xs text-slate-700 hover:text-teal-700 transition-colors"
-              title="Sign in to your account"
-            >
-              <div className="p-2 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-                <User className="w-4 h-4" />
-              </div>
+            <Link to="/login" className="hidden sm:flex items-center gap-2 text-xs text-slate-700 hover:text-teal-700 transition-colors" title="Sign in to your account">
+              <div className="p-2 rounded-full bg-slate-100 text-slate-600 border border-slate-200"><User className="w-4 h-4" /></div>
               <div className="text-left leading-tight">
                 <p className="text-[10px] text-slate-400 font-medium">Welcome!</p>
                 <p className="font-bold text-slate-800">Sign In / Register</p>
               </div>
             </Link>
           )}
+
+          <Link
+            to="/user"
+            className="relative p-2.5 rounded-full bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-600 transition-all border border-slate-300 shadow-sm"
+            title="Saved Products / Wishlist"
+          >
+            <Heart className="w-5 h-5" />
+            {totalSaved > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-rose-500 text-white text-[11px] font-black flex items-center justify-center shadow-md animate-scale-up">
+                {totalSaved}
+              </span>
+            )}
+          </Link>
 
           <button
             onClick={() => setIsCartOpen(true)}
@@ -140,10 +139,7 @@ export const StoreHeader: React.FC = () => {
             )}
           </button>
 
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-          >
+          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100">
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
@@ -151,16 +147,14 @@ export const StoreHeader: React.FC = () => {
 
       <div className="bg-slate-50 border-t border-slate-200 hidden md:block">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-center gap-8 py-3 text-xs font-bold tracking-widest text-slate-700">
-          {navLinks.map((link) => {
+          {NAV_LINKS.map((link) => {
             const active = isLinkActive(link.path);
             return (
               <Link
                 key={link.label}
                 to={link.path}
                 className={`transition-colors duration-150 relative py-1 ${
-                  active
-                    ? 'text-teal-700 font-extrabold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-teal-600'
-                    : 'text-slate-600 hover:text-teal-600'
+                  active ? 'text-teal-700 font-extrabold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-teal-600' : 'text-slate-600 hover:text-teal-600'
                 }`}
               >
                 {link.label}
@@ -170,70 +164,19 @@ export const StoreHeader: React.FC = () => {
         </div>
       </div>
 
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-b border-slate-200 p-4 space-y-3 shadow-lg">
-          <form onSubmit={handleSearch} className="relative mb-3">
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-slate-100 border border-slate-300 rounded-xl py-2 pl-4 pr-10 text-sm text-slate-900"
-            />
-            <button type="submit" className="absolute right-3 top-2.5 text-teal-600">
-              <Search className="w-4 h-4" />
-            </button>
-          </form>
-          {navLinks.map((link) => {
-            const active = isLinkActive(link.path);
-            return (
-              <Link
-                key={link.label}
-                to={link.path}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`block py-2 text-sm font-semibold transition-colors ${
-                  active ? 'text-teal-700 font-bold' : 'text-slate-700 hover:text-teal-600'
-                }`}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-
-          <div className="pt-2 border-t border-slate-200">
-            {isAuthenticated && user ? (
-              <>
-                <Link
-                  to="/profile"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block py-2 text-sm font-semibold text-slate-700 hover:text-teal-600"
-                >
-                  My Profile ({user.name})
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    logout();
-                    navigate('/');
-                  }}
-                  className="w-full text-left py-2 text-sm font-semibold text-rose-600 hover:text-rose-700"
-                >
-                  Sign out
-                </button>
-              </>
-            ) : (
-              <Link
-                to="/login"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block py-2 text-sm font-bold text-teal-700 hover:text-teal-800"
-              >
-                Sign In / Register
-              </Link>
-            )}
-          </div>
-        </div>
-      )}
+      <StoreMobileNav
+        isOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        onSearchSubmit={handleSearch}
+        navLinks={NAV_LINKS}
+        isLinkActive={isLinkActive}
+        isAuthenticated={isAuthenticated}
+        userName={user?.name}
+        onLogout={handleLogout}
+      />
     </header>
   );
 };
+

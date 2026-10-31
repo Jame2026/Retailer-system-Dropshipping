@@ -5,6 +5,7 @@ import sourcingRoutes from './api/sourcing.routes.js';
 import authRoutes from './api/auth.routes.js';
 import couponRoutes from './api/coupon.routes.js';
 import reviewRoutes from './api/review.routes.js';
+import shippingRoutes from './api/shipping.routes.js';
 import shopifyWebhookRoutes from './webhooks/shopify.routes.js';
 import supplierWebhookRoutes from './webhooks/supplier.routes.js';
 import { apiLimiter } from '../middleware/rateLimit.js';
@@ -17,6 +18,7 @@ router.use('/api/auth', authRoutes);
 router.use('/api/orders', orderRoutes);
 router.use('/api/catalog', catalogRoutes);
 router.use('/api/sourcing', sourcingRoutes);
+router.use('/api/shipping', shippingRoutes);
 router.use('/api/coupons', couponRoutes);
 router.use('/api/reviews', reviewRoutes);
 

@@ -102,6 +102,25 @@ export const authService = {
     };
   },
 
+  async updateProfile(
+    name: string
+  ): Promise<AdminProfile & { twoFactorEnabled: boolean; lastLoginAt: string | null }> {
+    const response = await apiClient.put<
+      ApiResponse<AdminProfile & { twoFactorEnabled: boolean; lastLoginAt: string | null }>
+    >('/api/auth/profile', { name });
+    return response.data.data as AdminProfile & {
+      twoFactorEnabled: boolean;
+      lastLoginAt: string | null;
+    };
+  },
+
+  async initiate2fa(): Promise<{ setupToken: string; secret: string; otpauthUri: string }> {
+    const response = await apiClient.post<
+      ApiResponse<{ setupToken: string; secret: string; otpauthUri: string }>
+    >('/api/auth/2fa/initiate');
+    return response.data.data as { setupToken: string; secret: string; otpauthUri: string };
+  },
+
   async removeAvatar(): Promise<AdminProfile & { twoFactorEnabled: boolean; lastLoginAt: string | null }> {
     const response = await apiClient.delete<
       ApiResponse<AdminProfile & { twoFactorEnabled: boolean; lastLoginAt: string | null }>

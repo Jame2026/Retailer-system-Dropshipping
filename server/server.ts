@@ -22,10 +22,16 @@ async function connectWithRetry(retries = 5, delayMs = 1500) {
 async function bootstrap() {
   try {
     await connectWithRetry();
+    const { pricingService } = await import('./services/pricing.service.js');
+    await pricingService.initialize();
 
     const server = app.listen(PORT, () => {
       logger.info(`🚀 Retailer Dropshipping Server running on port ${PORT} [${env.NODE_ENV}]`);
       logger.info(`🌐 Base URL: ${env.APP_URL}`);
+
+      import('./integrations/cj/cj.client.js')
+        .then(({ cjClient }) => cjClient.getAccessToken())
+        .catch((err) => logger.warn({ err: err.message }, 'CJ token background warmup skipped'));
     });
 
     const shutdown = async (signal: string) => {

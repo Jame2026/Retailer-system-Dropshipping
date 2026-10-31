@@ -1,166 +1,118 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { PageContainer } from '../components/layout/PageContainer.js';
-import { SourcingModal } from '../components/modules/catalog/SourcingModal.js';
 import { sourcingService } from '../services/sourcingService.js';
 import { useNotification } from '../context/NotificationContext.js';
-import { Card } from '../components/common/Card.js';
-import { Input } from '../components/common/Input.js';
 import { Button } from '../components/common/Button.js';
-import { formatCurrency } from '../utils/formatCurrency.js';
-import { Search, Sparkles, Plus, Factory } from 'lucide-react';
+import { Clock, RefreshCw } from 'lucide-react';
+import { SourcingHowItWorks } from '../components/modules/sourcing/SourcingHowItWorks.js';
+import { SourcingSummaryStats } from '../components/modules/sourcing/SourcingSummaryStats.js';
+import { SourcingFormCard } from '../components/modules/sourcing/SourcingFormCard.js';
+import { SourcingHistoryList } from '../components/modules/sourcing/SourcingHistoryList.js';
+import { SourcingFilterTabs, SourcingFilterType } from '../components/modules/sourcing/SourcingFilterTabs.js';
+import { SourcingRequestDTO } from '../types/catalog.types.js';
 
 export const SourcingPage: React.FC = () => {
   const { showToast } = useNotification();
-  const [keyword, setKeyword] = useState('');
-  const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [isSourcingModalOpen, setIsSourcingModalOpen] = useState(false);
+  const [requests, setRequests] = useState<any[]>([]);
+  const [loadingRequests, setLoadingRequests] = useState(false);
+  const [filter, setFilter] = useState<SourcingFilterType>('all');
 
-  const demoSupplierItems = [
-    {
-      pid: 'CJ-P-100234',
-      productName: 'Stainless Steel Minimalist Waterproof Quartz Watch',
-      productImage: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&q=80',
-      sellPrice: 12.5,
-      shippingPrice: 4.2,
-      origin: 'CJ Dropshipping Warehouse',
-    },
-    {
-      pid: 'CJ-P-55412',
-      productName: 'Waterproof Oxford Crossbody Anti-Theft Sling Bag',
-      productImage: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&q=80',
-      sellPrice: 8.0,
-      shippingPrice: 3.5,
-      origin: 'CJ Dropshipping Warehouse',
-    },
-    {
-      pid: 'CJ-P-77890',
-      productName: 'Ultra-Quiet Ultrasonic Air Humidifier & Diffuser',
-      productImage: 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=300&q=80',
-      sellPrice: 6.8,
-      shippingPrice: 3.9,
-      origin: 'CJ Dropshipping Warehouse',
-    },
-  ];
+  const fetchRequests = async () => {
+    try {
+      setLoadingRequests(true);
+      const data = await sourcingService.listSourcingRequests();
+      setRequests(data);
+    } catch {
+      // Keep empty if fails
+    } finally {
+      setLoadingRequests(false);
+    }
+  };
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!keyword.trim()) return;
+  useEffect(() => {
+    fetchRequests();
+  }, []);
 
+  const handleSubmit = async (dto: SourcingRequestDTO) => {
     try {
       setLoading(true);
-      const data = await sourcingService.searchSupplierCatalog(keyword);
-      if (data?.list?.length > 0) {
-        setResults(data.list);
-      } else {
-        setResults(demoSupplierItems.filter((i) => i.productName.toLowerCase().includes(keyword.toLowerCase())));
-      }
-    } catch {
-      setResults(demoSupplierItems.filter((i) => i.productName.toLowerCase().includes(keyword.toLowerCase())));
+      await sourcingService.submitSourcingRequest(dto);
+      showToast(
+        'success',
+        'Sourcing Query Submitted',
+        'CJ sourcing agents will contact factories and quote wholesale pricing within 24–48h.'
+      );
+      await fetchRequests();
+    } catch (err: any) {
+      showToast('error', 'Submission Failed', err.message || 'Unable to submit sourcing request.');
+      throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  const handleImport = (product: any) => {
-    showToast(
-      'success',
-      'Imported into Catalog',
-      `Product "${product.productName}" mapped with automated 2.5x markup formula.`
-    );
-  };
+  const filteredRequests = useMemo(() => {
+    return requests.filter((r) => {
+      const s = (r.status || 'PENDING').toUpperCase();
+      if (filter === 'pending') return s === 'PENDING';
+      if (filter === 'sourcing') return s === 'SOURCING';
+      if (filter === 'sourced') return s === 'SOURCED' || s === 'SUCCESS';
+      return true;
+    });
+  }, [requests, filter]);
 
-  const displayList = results.length > 0 ? results : demoSupplierItems;
+  const filterCounts = useMemo(() => ({
+    all: requests.length,
+    pending: requests.filter((r) => !r.status || r.status === 'PENDING').length,
+    sourcing: requests.filter((r) => r.status === 'SOURCING').length,
+    sourced: requests.filter((r) => r.status === 'SOURCED' || r.status === 'SUCCESS').length,
+  }), [requests]);
 
   return (
     <PageContainer
-      title="1-Click Supplier Sourcing & Catalog Importer"
-      subtitle="Search CJ Dropshipping manufacturer catalog or submit custom URL sourcing links"
-      action={
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => setIsSourcingModalOpen(true)}
-          className="bg-teal-600 hover:bg-teal-500 text-white font-bold"
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          Request Custom Product Quotation
-        </Button>
-      }
+      title="Custom Product Sourcing"
+      subtitle="Request CJ Dropshipping agents to source any product from AliExpress, 1688, Amazon, or TikTok at factory wholesale prices"
     >
-      <Card className="space-y-4">
-        <form onSubmit={handleSearch} className="flex gap-3">
-          <div className="relative flex-1">
-            <Input
-              placeholder="Search CJ catalog by product title, keyword, or supplier PID..."
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              className="pl-9"
-            />
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-          </div>
-          <Button type="submit" variant="secondary" isLoading={loading}>
-            Search Factory Catalog
-          </Button>
-        </form>
-      </Card>
+      <SourcingHowItWorks />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {displayList.map((item) => (
-          <Card key={item.pid} hoverEffect className="flex flex-col justify-between space-y-4 p-5">
-            <div className="space-y-3">
-              <div className="h-44 rounded-xl overflow-hidden bg-slate-50 border border-slate-200 relative group flex items-center justify-center">
-                <img
-                  src={item.productImage || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&q=80'}
-                  alt={item.productName}
-                  className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded bg-white/90 border border-slate-200 text-[10px] font-mono font-bold text-slate-800 backdrop-blur-md shadow-sm">
-                  PID: {item.pid}
-                </div>
-              </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div>
+          <SourcingFormCard onSubmit={handleSubmit} loading={loading} />
+        </div>
 
-              <div>
-                <h4 className="text-sm font-bold text-slate-900 line-clamp-2">{item.productName}</h4>
-                <div className="mt-2 flex items-center justify-between text-xs">
-                  <span className="text-slate-500">Factory Cost:</span>
-                  <span className="font-mono font-bold text-teal-700">
-                    {formatCurrency(item.sellPrice || 10.0)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-xs mt-0.5">
-                  <span className="text-slate-500">Est. US Shipping:</span>
-                  <span className="font-mono text-slate-700 font-semibold">
-                    {formatCurrency(item.shippingPrice || 3.5)}
-                  </span>
-                </div>
-              </div>
+        <div className="lg:col-span-2 space-y-4">
+          <SourcingSummaryStats requests={requests} />
+
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-teal-600" />
+              <h2 className="text-sm font-bold text-slate-900">
+                Sourcing History {requests.length > 0 && `(${requests.length})`}
+              </h2>
             </div>
 
-            <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-              <div className="text-[11px] text-slate-500 flex items-center gap-1 font-medium">
-                <Factory className="w-3.5 h-3.5 text-slate-400" />
-                CJ Factory
-              </div>
-
+            <div className="flex items-center gap-2">
+              <SourcingFilterTabs
+                currentFilter={filter}
+                onFilterChange={setFilter}
+                counts={filterCounts}
+              />
               <Button
-                variant="primary"
+                variant="ghost"
                 size="sm"
-                onClick={() => handleImport(item)}
-                className="text-xs"
+                onClick={fetchRequests}
+                disabled={loadingRequests}
+                className="text-xs shrink-0"
               >
-                <Plus className="w-3.5 h-3.5" />
-                1-Click Import
+                <RefreshCw className={`w-3.5 h-3.5 ${loadingRequests ? 'animate-spin' : ''}`} />
               </Button>
             </div>
-          </Card>
-        ))}
-      </div>
+          </div>
 
-      <SourcingModal
-        isOpen={isSourcingModalOpen}
-        onClose={() => setIsSourcingModalOpen(false)}
-      />
+          <SourcingHistoryList requests={filteredRequests} loading={loadingRequests} />
+        </div>
+      </div>
     </PageContainer>
   );
 };
