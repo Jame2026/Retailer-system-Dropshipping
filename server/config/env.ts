@@ -26,11 +26,6 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(8, 'JWT_SECRET must be at least 8 characters'),
   JWT_EXPIRES_IN: z.string().default('7d'),
 
-  SHOPIFY_SHOP_DOMAIN: z.string().min(1, 'SHOPIFY_SHOP_DOMAIN is required'),
-  SHOPIFY_ADMIN_ACCESS_TOKEN: z.string().min(1, 'SHOPIFY_ADMIN_ACCESS_TOKEN is required'),
-  SHOPIFY_WEBHOOK_SECRET: z.string().min(1, 'SHOPIFY_WEBHOOK_SECRET is required'),
-  SHOPIFY_API_VERSION: z.string().default('2024-01'),
-
   CJ_API_EMAIL: z.string().email().optional().or(z.literal('')),
   CJ_API_KEY: z.string().min(1, 'CJ_API_KEY is required'),
   CJ_BASE_URL: z.string().url().default('https://developers.cjdropshipping.com/api2.0/v1'),

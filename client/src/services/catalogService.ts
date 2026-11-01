@@ -137,7 +137,6 @@ export const catalogService = {
       maxAutoFulfillAmount: 300.0,
       lowBalanceThreshold: 100.0,
       currencySymbol: '$',
-      shopifyDomain: 'your-store.myshopify.com',
     };
   },
 

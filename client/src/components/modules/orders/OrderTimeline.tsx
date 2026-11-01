@@ -22,9 +22,9 @@ export const OrderTimeline: React.FC<OrderTimelineProps> = ({ order }) => {
   const steps = [
     {
       id: 'paid',
-      title: 'Shopify Payment Captured',
+      title: 'Payment Captured',
       description: 'Order placed by customer and payment verified.',
-      subtitle: formatDate(order.shopifyCreatedAt),
+      subtitle: formatDate(order.orderCreatedAt),
       isCompleted: true,
       icon: CheckCircle2,
       activeColor: 'text-teal-700 bg-teal-50 border-teal-300 ring-4 ring-teal-50',

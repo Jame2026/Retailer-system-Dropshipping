@@ -9,6 +9,7 @@ import { useNotification } from '../context/NotificationContext.js';
 import { authService, AdminProfile } from '../services/authService.js';
 import { ShieldCheck } from 'lucide-react';
 import { Card } from '../components/common/Card.js';
+import { Logo } from '../components/common/Logo.js';
 
 type Stage = 'credentials' | 'otp' | 'setup';
 
@@ -122,12 +123,12 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#F4EFE6] flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-teal-500/10 border border-teal-500/30">
-            <ShieldCheck className="w-7 h-7 text-teal-400" />
-          </div>
+          <Logo size="lg" variant="stacked" className="mb-2" />
+
+
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
             Admin Sign In
           </h1>

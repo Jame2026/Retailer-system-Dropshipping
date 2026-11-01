@@ -55,8 +55,8 @@ export class OrderDispatcher {
       if (targetSupplier === SupplierType.CJ) {
         for (const ri of resolvedItems) {
           if (!ri.vid) {
-            if (ri.item.shopifyVariantId && /^\d{15,}$/.test(ri.item.shopifyVariantId)) {
-              ri.vid = ri.item.shopifyVariantId;
+            if (ri.item.externalVariantId && /^\d{15,}$/.test(ri.item.externalVariantId)) {
+              ri.vid = ri.item.externalVariantId;
             } else {
               try {
                 const pidOrSku = ri.sku.replace(/^CJ-/, '');
@@ -73,7 +73,7 @@ export class OrderDispatcher {
         }
 
         const cjResponse = await cjOrder.createOrder({
-          orderNumber: order.shopifyOrderNumber,
+          orderNumber: order.orderNumber,
           shippingCountryCode: order.shippingCountryCode,
           shippingCountry: order.shippingCountry,
           shippingProvince: order.shippingProvince,
@@ -120,7 +120,7 @@ export class OrderDispatcher {
         }
       } else {
         const zendropResponse = await zendropClient.createOrder({
-          order_id: order.shopifyOrderNumber,
+          order_id: order.orderNumber,
           shipping_address: {
             name: order.shippingName,
             address1: order.shippingAddress1,

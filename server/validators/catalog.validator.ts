@@ -44,7 +44,6 @@ export const savePricingRulesSchema = z.object({
   maxAutoFulfillAmount: z.number().min(0).optional().default(300.0),
   lowBalanceThreshold: z.number().min(0).optional().default(100.0),
   currencySymbol: z.string().max(5).optional().default('$'),
-  shopifyDomain: z.string().optional(),
   cjApiKey: z.string().optional(),
   cjEmail: z.string().optional(),
   zendropKey: z.string().optional(),

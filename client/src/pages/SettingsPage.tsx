@@ -21,7 +21,6 @@ export const SettingsPage: React.FC = () => {
   const [cjKey, setCjKey] = useState('');
   const [cjEmail, setCjEmail] = useState('');
   const [zendropKey, setZendropKey] = useState('');
-  const [shopifyDomain, setShopifyDomain] = useState('your-store.myshopify.com');
   const [balanceAlertThreshold, setBalanceAlertThreshold] = useState(100.0);
   const [saving, setSaving] = useState(false);
   const [applyingPricing, setApplyingPricing] = useState(false);
@@ -32,7 +31,6 @@ export const SettingsPage: React.FC = () => {
     globalMultiplier: 2.5, shippingBuffer: 3.0, charmPricingEnabled: true, charmCents: 0.99,
     minMarginPercent: 40.0, holdDurationMinutes: 30, autoDispatchEnabled: true,
     maxAutoFulfillAmount: 300.0, lowBalanceThreshold: 100.0, currencySymbol: '$',
-    shopifyDomain: 'your-store.myshopify.com',
   });
 
   const [security, setSecurity] = useState<DynamicSettings | null>(null);
@@ -46,7 +44,6 @@ export const SettingsPage: React.FC = () => {
     catalogService.getPricingRules().then((r) => {
       if (!r) return;
       setPricingRules(r);
-      if (r.shopifyDomain) setShopifyDomain(r.shopifyDomain);
       if (r.lowBalanceThreshold) setBalanceAlertThreshold(r.lowBalanceThreshold);
       if (r.cjApiKey) setCjKey(r.cjApiKey);
       if (r.cjEmail) setCjEmail(r.cjEmail);
@@ -79,7 +76,7 @@ export const SettingsPage: React.FC = () => {
     setSaving(true);
     try {
       await catalogService.savePricingRules({
-        ...pricingRules, shopifyDomain, lowBalanceThreshold: balanceAlertThreshold,
+        ...pricingRules, lowBalanceThreshold: balanceAlertThreshold,
         cjApiKey: cjKey, cjEmail, zendropKey,
       });
       if (securityForm && security) await handleSaveSecurity();
@@ -93,7 +90,7 @@ export const SettingsPage: React.FC = () => {
     setApplyingPricing(true);
     try {
       const res = await catalogService.savePricingRules({
-        ...pricingRules, shopifyDomain, lowBalanceThreshold: balanceAlertThreshold,
+        ...pricingRules, lowBalanceThreshold: balanceAlertThreshold,
         cjApiKey: cjKey, cjEmail, zendropKey, applyToExistingMappings: true,
       });
       showToast('success', 'Formula Applied', `Recalculated prices for ${res.updatedCount ?? totalProducts} catalog products!`);
@@ -156,7 +153,6 @@ export const SettingsPage: React.FC = () => {
 
         {(activeTab === 'all' || activeTab === 'api') && (
           <ApiCredentialsCards
-            shopifyDomain={shopifyDomain} setShopifyDomain={setShopifyDomain}
             cjEmail={cjEmail} setCjEmail={setCjEmail} cjKey={cjKey} setCjKey={setCjKey}
             balanceAlertThreshold={balanceAlertThreshold} setBalanceAlertThreshold={setBalanceAlertThreshold}
             zendropKey={zendropKey} setZendropKey={setZendropKey}

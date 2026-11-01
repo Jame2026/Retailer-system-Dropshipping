@@ -1,21 +1,20 @@
 import { prisma } from '../database/client.js';
 import { OrderStatus, SupplierType } from '@prisma/client';
 import { CONSTANTS } from '../config/constants.js';
-import { ShopifyOrderWebhookPayload } from '../types/order.types.js';
 import { cjOrder } from '../integrations/cj/cj.order.js';
 import { logger } from '../utils/logger.js';
 import { orderDispatcher } from './order.dispatcher.js';
-import { ingestShopifyOrder } from './order.ingest.js';
+import { ingestStoreOrder } from './order.ingest.js';
 
 export class OrderService {
-  async handleShopifyOrderPaid(payload: ShopifyOrderWebhookPayload) {
-    return ingestShopifyOrder(payload);
+  async createStoreOrder(payload: Parameters<typeof ingestStoreOrder>[0]) {
+    return ingestStoreOrder(payload);
   }
 
-  async handleShopifyOrderCancelled(shopifyOrderId: string, reason?: string) {
-    const order = await prisma.order.findUnique({ where: { shopifyOrderId } });
+  async cancelOrder(orderId: string, reason?: string) {
+    const order = await prisma.order.findUnique({ where: { id: orderId } });
     if (!order) {
-      logger.warn({ shopifyOrderId }, 'Cancelled webhook received for unknown order');
+      logger.warn({ orderId }, 'Cancellation requested for unknown order');
       return null;
     }
     if (order.supplierOrderId && order.supplierType === SupplierType.CJ) {
@@ -27,7 +26,7 @@ export class OrderService {
     }
     return prisma.order.update({
       where: { id: order.id },
-      data: { status: OrderStatus.CANCELLED, cancelledAt: new Date(), manualReviewNotes: `Shopify: ${reason || 'Cancelled'}` },
+      data: { status: OrderStatus.CANCELLED, cancelledAt: new Date(), manualReviewNotes: reason || 'Cancelled' },
     });
   }
 
@@ -45,7 +44,7 @@ export class OrderService {
       case 'SWITCH_SUPPLIER':
         return await this.dispatchOrderToSupplier(orderId, targetSupplier);
       case 'CANCEL':
-        return await this.handleShopifyOrderCancelled(order.shopifyOrderId, notes);
+        return await this.cancelOrder(order.id, notes);
       case 'SET_MANUAL_REVIEW':
         return await prisma.order.update({
           where: { id: orderId },
@@ -83,7 +82,7 @@ export class OrderService {
             trackingNumber: detail.trackNumber,
             trackingCompany: detail.logisticName || 'USPS',
             status: detail.orderStatus || 'IN_TRANSIT',
-            syncedToShopify: false,
+            trackingSynced: false,
           },
         });
       }
@@ -144,7 +143,7 @@ export class OrderService {
     if (params.search) {
       const q = params.search.trim();
       where.OR = [
-        { shopifyOrderNumber: { contains: q, mode: 'insensitive' } },
+        { orderNumber: { contains: q, mode: 'insensitive' } },
         { customerEmail: { contains: q, mode: 'insensitive' } },
         { shippingName: { contains: q, mode: 'insensitive' } },
         { supplierOrderId: { contains: q, mode: 'insensitive' } },

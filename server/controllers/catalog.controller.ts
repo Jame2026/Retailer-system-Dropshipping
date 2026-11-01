@@ -131,7 +131,6 @@ export class CatalogController {
           maxAutoFulfillAmount: Number(m['orders.maxAutoFulfillAmount']) || 300.0,
           lowBalanceThreshold: Number(m['billing.lowBalanceThreshold']) || 100.0,
           currencySymbol: String(m['system.currencySymbol'] || '$'),
-          shopifyDomain: String(m['shopify.domain'] || 'your-store.myshopify.com'),
           cjApiKey: String(m['cj.apiKey'] || env.CJ_API_KEY || ''),
           cjEmail: String(m['cj.email'] || env.CJ_API_EMAIL || 'partner@example.com'),
           zendropKey: String(m['zendrop.apiKey'] || env.ZENDROP_API_KEY || ''),
@@ -151,7 +150,6 @@ export class CatalogController {
         'pricing.minMarginPercent': v.minMarginPercent, 'orders.holdDurationMinutes': v.holdDurationMinutes ?? 30,
         'orders.autoDispatchEnabled': v.autoDispatchEnabled ?? true, 'orders.maxAutoFulfillAmount': v.maxAutoFulfillAmount ?? 300.0,
         'billing.lowBalanceThreshold': v.lowBalanceThreshold ?? 100.0, 'system.currencySymbol': v.currencySymbol ?? '$',
-        'shopify.domain': v.shopifyDomain ?? 'your-store.myshopify.com',
         'cj.apiKey': v.cjApiKey, 'cj.email': v.cjEmail, 'zendrop.apiKey': v.zendropKey,
       };
       for (const [key, val] of Object.entries(entries)) {

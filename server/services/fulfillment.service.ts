@@ -2,7 +2,6 @@ import { prisma } from '../database/client.js';
 import { FulfillmentStatus, OrderStatus, SupplierType } from '@prisma/client';
 import { cjOrder } from '../integrations/cj/cj.order.js';
 import { zendropClient } from '../integrations/zendrop/zendrop.client.js';
-import { shopifyFulfillment } from '../integrations/shopify/shopify.fulfillment.js';
 import { logger } from '../utils/logger.js';
 
 export class FulfillmentService {
@@ -55,23 +54,6 @@ export class FulfillmentService {
             },
           });
 
-          if (!fulfillment.syncedToShopify) {
-            await shopifyFulfillment.createFulfillment(order.shopifyOrderId, {
-              trackingNumber: trackingInfo.trackingNumber,
-              trackingCompany: trackingInfo.logisticName || 'USPS',
-              trackingUrl: fulfillment.trackingUrl || undefined,
-              notifyCustomer: true,
-            });
-
-            await prisma.fulfillment.update({
-              where: { id: fulfillment.id },
-              data: {
-                syncedToShopify: true,
-                syncedAt: new Date(),
-              },
-            });
-          }
-
           await prisma.order.update({
             where: { id: order.id },
             data: {
@@ -82,7 +64,7 @@ export class FulfillmentService {
           syncCount++;
           logger.info(
             { orderId: order.id, trackingNumber: trackingInfo.trackingNumber },
-            'Synced tracking number to Shopify and marked order as SHIPPED'
+            'Synced CJ tracking number and marked order as SHIPPED'
           );
         }
       } catch (error: any) {

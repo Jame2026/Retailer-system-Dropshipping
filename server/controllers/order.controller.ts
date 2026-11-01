@@ -151,7 +151,7 @@ export class OrderController {
   async simulateOrder(req: Request, res: Response, next: NextFunction) {
     try {
       const payload = req.body;
-      const order = await orderService.handleShopifyOrderPaid(payload);
+      const order = await orderService.createStoreOrder(payload);
 
       return res.status(201).json({
         success: true,

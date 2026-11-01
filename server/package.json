@@ -1,7 +1,7 @@
 {
   "name": "retailer-system-dropshipping-server",
   "version": "1.0.0",
-  "description": "Automated Dropshipping Retailer Backend System with Shopify & CJ / Zendrop Integration",
+  "description": "Automated Dropshipping Retailer Backend System with CJ Dropshipping integration",
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc",

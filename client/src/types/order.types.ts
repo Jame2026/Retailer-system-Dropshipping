@@ -16,9 +16,9 @@ export type SupplierType = 'CJ' | 'ZENDROP' | 'CUSTOM';
 export interface OrderItem {
   id: string;
   orderId: string;
-  shopifyLineItemId: string;
-  shopifyProductId?: string | null;
-  shopifyVariantId: string;
+  externalLineItemId: string;
+  externalProductId?: string | null;
+  externalVariantId: string;
   title: string;
   variantTitle?: string | null;
   storeSku: string;
@@ -41,16 +41,16 @@ export interface Fulfillment {
   trackingCompany: string;
   trackingUrl?: string | null;
   status: string;
-  syncedToShopify: boolean;
+  trackingSynced: boolean;
   syncedAt?: string | null;
   createdAt: string;
 }
 
 export interface Order {
   id: string;
-  shopifyOrderId: string;
-  shopifyOrderNumber: string;
-  shopifyCreatedAt: string;
+  externalOrderId: string;
+  orderNumber: string;
+  orderCreatedAt: string;
   customerEmail: string;
   customerPhone?: string | null;
 

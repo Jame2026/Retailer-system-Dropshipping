@@ -8,6 +8,7 @@ import { AdminAuthHeader } from '../components/auth/AdminAuthHeader.js';
 import { ActiveSessionBanner } from '../components/auth/ActiveSessionBanner.js';
 import { DemoAccountsPicker } from '../components/auth/DemoAccountsPicker.js';
 import { AdminAuthForm } from '../components/auth/AdminAuthForm.js';
+import { Logo } from '../components/common/Logo.js';
 
 export const AdminLoginPage: React.FC = () => {
   const { user, login, register, logout, isAuthenticated, setSession } = useAuth();
@@ -83,15 +84,15 @@ export const AdminLoginPage: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col justify-between font-['Plus_Jakarta_Sans',sans-serif] text-slate-900">
+    <div className="min-h-screen bg-[#F4EFE6] flex flex-col justify-between font-['Plus_Jakarta_Sans',sans-serif] text-[#1F1C18]">
       <AdminAuthHeader />
 
       <main className="flex-1 flex items-center justify-center p-4 sm:p-6 my-8">
         <div className="w-full max-w-lg bg-white rounded-3xl border border-slate-200 shadow-xl p-8 sm:p-10 space-y-6">
           <div className="text-center space-y-2">
-            <div className="w-14 h-14 rounded-2xl bg-teal-50 border border-teal-200 text-teal-600 flex items-center justify-center mx-auto shadow-sm">
-              <ShieldCheck className="w-8 h-8" />
-            </div>
+            <Logo size="lg" variant="stacked" showText={false} className="mx-auto mb-2" />
+
+
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
               {mode === 'login' ? 'Admin Sign In' : 'Create Admin Account'}
             </h1>
@@ -142,6 +143,7 @@ export const AdminLoginPage: React.FC = () => {
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
               <div className="flex-1 font-medium">{errorMessage}</div>
             </div>
+
           )}
 
           {mode === 'login' && <DemoAccountsPicker onSelectAccount={handleQuickFill} />}

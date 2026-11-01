@@ -25,7 +25,7 @@ export const CartDrawer: React.FC = () => {
       const generatedOrderNum = `#${Math.floor(1000 + Math.random() * 9000)}`;
 
       const payload = {
-        id: `gid://shopify/Order/${Date.now()}`,
+        id: `store-order-${Date.now()}`,
         name: generatedOrderNum,
         order_number: generatedOrderNum,
         created_at: new Date().toISOString(),

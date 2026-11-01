@@ -1,59 +1,41 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
-  LayoutDashboard,
-  ShoppingCart,
-  Layers,
-  Calculator,
-  Truck,
-  Sparkles,
+  LayoutGrid,
   Package,
+  ShoppingCart,
+  Truck,
+  Layers,
+  Sparkles,
   Settings,
-  Zap,
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
   const navigationItems = [
-    { name: 'Dashboard', path: '/admin', exact: true, icon: LayoutDashboard },
-    { name: 'CJ Products', path: '/admin/cj-products', icon: Package },
+    { name: 'Dashboard', path: '/admin', exact: true, icon: LayoutGrid },
+    { name: 'Products', path: '/admin/products', icon: Package },
     { name: 'Orders', path: '/admin/orders', icon: ShoppingCart },
-    { name: 'Store Products', path: '/admin/catalog', icon: Layers },
-    { name: 'Shipping & Freight', path: '/admin/shipping', icon: Truck },
-    { name: 'Custom Sourcing', path: '/admin/sourcing', icon: Sparkles },
-    { name: 'Pricing Rules', path: '/admin/pricing', icon: Calculator },
+    { name: 'Freight', path: '/admin/shipping', icon: Truck },
+    { name: 'Sourcing', path: '/admin/sourcing', icon: Layers },
+    { name: 'Pricing', path: '/admin/pricing', icon: Sparkles },
     { name: 'Settings', path: '/admin/settings', icon: Settings },
   ];
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-64 border-r border-slate-200 bg-white flex flex-col z-40 shadow-sm">
-      <div className="h-16 flex items-center gap-3 px-6 border-b border-slate-200">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-teal-500 to-teal-400 flex items-center justify-center shadow-md shadow-teal-500/20">
-          <Zap className="w-5 h-5 text-white fill-current" />
-        </div>
-        <div>
-          <h1 className="font-extrabold text-sm tracking-tight text-slate-900 flex items-center gap-1.5">
-            DROPSHIP <span className="text-teal-600 font-semibold">CORE</span>
-          </h1>
-          <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Store Manager</p>
-        </div>
-      </div>
-
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-          Menu
-        </div>
+    <aside className="fixed left-0 top-16 bottom-0 w-56 bg-[#F4EFE6] border-r border-[#E8E2D6]/70 flex flex-col justify-between p-4 z-20 select-none">
+      <nav className="space-y-1.5 pt-2">
         {navigationItems.map((item) => {
-          const Icon = item.icon || LayoutDashboard;
+          const Icon = item.icon;
           return (
             <NavLink
               key={item.path}
               to={item.path}
-              end={item.path === '/admin'}
+              end={item.exact}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                `flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm transition-all duration-150 ${
                   isActive
-                    ? 'bg-teal-50 text-teal-700 border border-teal-200 shadow-sm font-bold'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                    ? 'bg-[#E5DFD3] text-[#1F1C18] font-bold shadow-2xs'
+                    : 'text-[#6B655B] hover:text-[#1F1C18] hover:bg-[#ECE5D9]/60 font-medium'
                 }`
               }
             >
@@ -64,15 +46,20 @@ export const Sidebar: React.FC = () => {
         })}
       </nav>
 
-      <div className="p-3.5 border border-slate-200 bg-slate-50 m-3 rounded-2xl space-y-1.5">
-        <div className="flex items-center justify-between text-xs text-slate-600">
-          <span className="font-medium">Order Buffer</span>
-          <span className="text-teal-700 font-bold">Protection Active</span>
-        </div>
-        <div className="flex items-center justify-between text-xs text-slate-600">
-          <span className="font-medium">Primary Supplier</span>
-          <span className="text-slate-900 font-bold">CJ Dropshipping</span>
-        </div>
+      {/* Bottom links */}
+      <div className="pt-4 pb-2 px-3 text-xs text-[#857E74] space-y-1.5 border-t border-[#E8E2D6]/60">
+        <NavLink
+          to="/admin/settings"
+          className="block hover:text-[#1F1C18] transition-colors font-medium text-[12px]"
+        >
+          Order Buffer
+        </NavLink>
+        <NavLink
+          to="/admin/settings"
+          className="block hover:text-[#1F1C18] transition-colors font-medium text-[12px]"
+        >
+          Primary Supplier
+        </NavLink>
       </div>
     </aside>
   );

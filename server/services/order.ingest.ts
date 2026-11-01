@@ -1,19 +1,19 @@
 import { prisma } from '../database/client.js';
 import { OrderStatus } from '@prisma/client';
 import { CONSTANTS } from '../config/constants.js';
-import { ShopifyOrderWebhookPayload } from '../types/order.types.js';
+import { StoreOrderPayload } from '../types/order.types.js';
 import { normalizeAddress } from '../utils/addressNormalizer.js';
 import { logger } from '../utils/logger.js';
 
-export async function ingestShopifyOrder(payload: ShopifyOrderWebhookPayload) {
-  const shopifyOrderId = String(payload.admin_graphql_api_id || payload.id);
+export async function ingestStoreOrder(payload: StoreOrderPayload) {
+  const externalOrderId = String(payload.admin_graphql_api_id || payload.id);
   const existingOrder = await prisma.order.findUnique({
-    where: { shopifyOrderId },
+    where: { externalOrderId },
     include: { items: true },
   });
 
   if (existingOrder) {
-    logger.info({ shopifyOrderId }, 'Order already exists in database, skipping duplicate ingestion');
+    logger.info({ externalOrderId }, 'Order already exists in database, skipping duplicate ingestion');
     return existingOrder;
   }
 
@@ -46,9 +46,9 @@ export async function ingestShopifyOrder(payload: ShopifyOrderWebhookPayload) {
 
   const createdOrder = await prisma.order.create({
     data: {
-      shopifyOrderId,
-      shopifyOrderNumber: String(payload.name || payload.order_number),
-      shopifyCreatedAt: new Date(payload.created_at || Date.now()),
+      externalOrderId,
+      orderNumber: String(payload.name || payload.order_number),
+      orderCreatedAt: new Date(payload.created_at || Date.now()),
       customerEmail: payload.email || 'no-email@customer.com',
       customerPhone: payload.phone || normalizedAddress.phone,
 
@@ -78,9 +78,9 @@ export async function ingestShopifyOrder(payload: ShopifyOrderWebhookPayload) {
               where: { storeSku: item.sku },
             });
             return {
-              shopifyLineItemId: String(item.id),
-              shopifyProductId: item.product_id ? String(item.product_id) : null,
-              shopifyVariantId: String(item.variant_id),
+              externalLineItemId: String(item.id),
+              externalProductId: item.product_id ? String(item.product_id) : null,
+              externalVariantId: String(item.variant_id),
               title: item.title,
               variantTitle: item.variant_title || null,
               storeSku: item.sku,
@@ -96,8 +96,8 @@ export async function ingestShopifyOrder(payload: ShopifyOrderWebhookPayload) {
   });
 
   logger.info(
-    { orderId: createdOrder.id, shopifyOrderNumber: createdOrder.shopifyOrderNumber, status: createdOrder.status },
-    'Ingested new Shopify order into dropshipping pipeline'
+    { orderId: createdOrder.id, orderNumber: createdOrder.orderNumber, status: createdOrder.status },
+    'Ingested new store order into dropshipping pipeline'
   );
 
   return createdOrder;

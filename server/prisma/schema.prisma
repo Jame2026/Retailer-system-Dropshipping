@@ -46,9 +46,9 @@ enum FulfillmentStatus {
 
 model Order {
   id                    String        @id @default(uuid())
-  shopifyOrderId        String        @unique
-  shopifyOrderNumber    String
-  shopifyCreatedAt      DateTime
+  externalOrderId       String        @unique @map("shopifyOrderId")
+  orderNumber           String        @map("shopifyOrderNumber")
+  orderCreatedAt        DateTime      @map("shopifyCreatedAt")
   customerEmail         String
   customerPhone         String?
 
@@ -93,7 +93,7 @@ model Order {
 
   @@index([status])
   @@index([holdExpiresAt])
-  @@index([shopifyOrderId])
+  @@index([externalOrderId], map: "Order_shopifyOrderId_idx")
 }
 
 model OrderItem {
@@ -101,9 +101,9 @@ model OrderItem {
   orderId               String
   order                 Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
-  shopifyLineItemId     String
-  shopifyProductId      String?
-  shopifyVariantId      String
+  externalLineItemId    String         @map("shopifyLineItemId")
+  externalProductId     String?        @map("shopifyProductId")
+  externalVariantId     String         @map("shopifyVariantId")
   title                 String
   variantTitle          String?
   storeSku              String
@@ -153,8 +153,8 @@ model SkuMapping {
 
 model ProductVariant {
   id                    String         @id @default(uuid())
-  shopifyVariantId      String         @unique
-  shopifyProductId      String
+  externalVariantId     String         @unique @map("shopifyVariantId")
+  externalProductId     String         @map("shopifyProductId")
   title                 String
   sku                   String
   price                 Float
@@ -179,8 +179,8 @@ model Fulfillment {
   trackingUrl           String?
   status                FulfillmentStatus  @default(PENDING)
 
-  syncedToShopify       Boolean            @default(false)
-  shopifyFulfillmentId  String?
+  trackingSynced        Boolean            @default(false) @map("syncedToShopify")
+  externalFulfillmentId String?            @map("shopifyFulfillmentId")
   syncedAt              DateTime?
 
   createdAt             DateTime           @default(now())

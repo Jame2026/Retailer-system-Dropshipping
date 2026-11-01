@@ -110,12 +110,12 @@ async function main() {
   });
 
   const sampleOrder = await prisma.order.upsert({
-    where: { shopifyOrderId: 'gid://shopify/Order/9900112233' },
+    where: { externalOrderId: 'sample-order-9900112233' },
     update: {},
     create: {
-      shopifyOrderId: 'gid://shopify/Order/9900112233',
-      shopifyOrderNumber: '#1001',
-      shopifyCreatedAt: new Date(),
+      externalOrderId: 'sample-order-9900112233',
+      orderNumber: '#1001',
+      orderCreatedAt: new Date(),
       customerEmail: 'customer@example.com',
       customerPhone: '+1 555-0199',
       shippingName: 'John Doe',
@@ -138,9 +138,9 @@ async function main() {
       items: {
         create: [
           {
-            shopifyLineItemId: 'gid://shopify/LineItem/101',
-            shopifyProductId: 'gid://shopify/Product/501',
-            shopifyVariantId: 'gid://shopify/ProductVariant/601',
+            externalLineItemId: 'sample-line-item-101',
+            externalProductId: 'sample-product-501',
+            externalVariantId: 'sample-variant-601',
             title: 'Minimalist Stainless Steel Watch - Silver',
             storeSku: 'RET-WATCH-001-SLV',
             quantity: 1,
@@ -148,9 +148,9 @@ async function main() {
             skuMappingId: mapping1.id,
           },
           {
-            shopifyLineItemId: 'gid://shopify/LineItem/102',
-            shopifyProductId: 'gid://shopify/Product/502',
-            shopifyVariantId: 'gid://shopify/ProductVariant/602',
+            externalLineItemId: 'sample-line-item-102',
+            externalProductId: 'sample-product-502',
+            externalVariantId: 'sample-variant-602',
             title: 'Waterproof Travel Crossbody Bag - Black',
             storeSku: 'RET-BAG-002-BLK',
             quantity: 1,
@@ -164,7 +164,7 @@ async function main() {
 
   console.log('✅ Seeding complete!');
   console.log(`- Created/Verified SKU Mappings: ${mapping1.storeSku}, ${mapping2.storeSku}`);
-  console.log(`- Created/Verified Sample Order: ${sampleOrder.shopifyOrderNumber}`);
+  console.log(`- Created/Verified Sample Order: ${sampleOrder.orderNumber}`);
 }
 
 main()

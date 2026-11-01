@@ -81,14 +81,14 @@ export const OrderTable: React.FC<OrderTableProps> = ({
           return (
             <TableRow key={order.id} onClick={() => navigate(`/admin/orders/${order.id}`)}>
               <TableCell>
-                <div className="font-bold text-slate-900 font-mono">{order.shopifyOrderNumber}</div>
+                <div className="font-bold text-slate-900 font-mono">{order.orderNumber}</div>
                 {order.items && order.items.length > 0 && (
                   <p className="text-[11px] text-slate-500 font-normal">
                     {order.items.length} {order.items.length === 1 ? 'item' : 'items'}
                   </p>
                 )}
               </TableCell>
-              <TableCell className="text-xs text-slate-500">{formatDate(order.shopifyCreatedAt)}</TableCell>
+              <TableCell className="text-xs text-slate-500">{formatDate(order.orderCreatedAt)}</TableCell>
               <TableCell>
                 <div className="text-xs">
                   <p className="font-semibold text-slate-900">{order.shippingName}</p>

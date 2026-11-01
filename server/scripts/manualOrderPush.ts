@@ -8,7 +8,7 @@ async function run() {
   const forceSupplier = args[1] as SupplierType | undefined;
 
   if (!orderIdentifier) {
-    console.log('Usage: npx tsx scripts/manualOrderPush.ts <orderId_or_shopifyOrderNumber> [CJ|ZENDROP]');
+    console.log('Usage: npx tsx scripts/manualOrderPush.ts <orderId_or_orderNumber> [CJ|ZENDROP]');
     process.exit(1);
   }
 
@@ -18,8 +18,8 @@ async function run() {
     where: {
       OR: [
         { id: orderIdentifier },
-        { shopifyOrderNumber: orderIdentifier },
-        { shopifyOrderId: orderIdentifier },
+        { orderNumber: orderIdentifier },
+        { externalOrderId: orderIdentifier },
       ],
     },
     include: { items: true },
@@ -30,7 +30,7 @@ async function run() {
     process.exit(1);
   }
 
-  console.log(`📦 Found Order: ID=${order.id}, Shopify#=${order.shopifyOrderNumber}, Status=${order.status}`);
+  console.log(`📦 Found Order: ID=${order.id}, Number=${order.orderNumber}, Status=${order.status}`);
   console.log(`🚀 Triggering manual order push to supplier (${forceSupplier || 'Default Mapping'})...`);
 
   try {

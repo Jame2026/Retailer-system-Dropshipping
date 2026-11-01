@@ -2,7 +2,6 @@ import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import routes from './routes/index.js';
 import { errorHandler } from './middleware/errorHandler.js';
-import { RequestWithRawBody } from './middleware/verifyShopifyHmac.js';
 
 export function createApp(): Express {
   const app = express();
@@ -12,11 +11,6 @@ export function createApp(): Express {
   app.use(
     express.json({
       limit: '1mb',
-      verify: (req: RequestWithRawBody, res: Response, buf: Buffer) => {
-        if (req.originalUrl.startsWith('/webhooks/shopify') || req.originalUrl.startsWith('/webhooks/cj')) {
-          req.rawBody = buf;
-        }
-      },
     })
   );
 

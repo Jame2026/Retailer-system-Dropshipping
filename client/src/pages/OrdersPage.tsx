@@ -40,7 +40,7 @@ export const OrdersPage: React.FC = () => {
   const handleSyncOrder = async (order: Order) => {
     try {
       const updated = await orderService.syncCjStatus(order.id);
-      showToast('success', 'CJ Status Synced', `Order ${updated.shopifyOrderNumber}: ${updated.status}`);
+      showToast('success', 'CJ Status Synced', `Order ${updated.orderNumber}: ${updated.status}`);
       refresh();
     } catch (err: any) {
       showToast('error', 'Sync Failed', err.message);
@@ -50,7 +50,7 @@ export const OrdersPage: React.FC = () => {
   const handleReleaseHold = async (order: Order) => {
     try {
       await orderService.manualOverride({ orderId: order.id, action: 'RELEASE_NOW' });
-      showToast('success', 'Hold Released', `Order ${order.shopifyOrderNumber} dispatched to factory.`);
+      showToast('success', 'Hold Released', `Order ${order.orderNumber} dispatched to factory.`);
       refresh();
     } catch (err: any) {
       showToast('error', 'Dispatch Failed', err.message);
@@ -164,7 +164,7 @@ export const OrdersPage: React.FC = () => {
           isOpen={!!selectedRetryOrder}
           onClose={() => setSelectedRetryOrder(null)}
           orderId={selectedRetryOrder.id}
-          orderNumber={selectedRetryOrder.shopifyOrderNumber}
+          orderNumber={selectedRetryOrder.orderNumber}
           orderStatus={selectedRetryOrder.status}
           holdExpiresAt={selectedRetryOrder.holdExpiresAt}
           currentSupplier={selectedRetryOrder.supplierType}
@@ -177,7 +177,7 @@ export const OrdersPage: React.FC = () => {
           isOpen={!!selectedCancelOrder}
           onClose={() => setSelectedCancelOrder(null)}
           orderId={selectedCancelOrder.id}
-          orderNumber={selectedCancelOrder.shopifyOrderNumber}
+          orderNumber={selectedCancelOrder.orderNumber}
           supplierOrderId={selectedCancelOrder.supplierOrderId}
           onSuccess={refresh}
         />

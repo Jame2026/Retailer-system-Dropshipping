@@ -24,7 +24,7 @@ export const orderLineItemSchema = z.object({
   price: z.union([z.string(), z.number()]),
 });
 
-export const shopifyOrderWebhookSchema = z.object({
+export const storeOrderSchema = z.object({
   id: z.union([z.string(), z.number()]),
   admin_graphql_api_id: z.string().optional(),
   name: z.string(),

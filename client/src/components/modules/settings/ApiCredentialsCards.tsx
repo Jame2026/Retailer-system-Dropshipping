@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { Card } from '../../common/Card.js';
 import { Input } from '../../common/Input.js';
 import { useNotification } from '../../../context/NotificationContext.js';
-import { Webhook, Key, Shield, Eye, EyeOff, Copy, Check } from 'lucide-react';
+import { Key, Shield, Eye, EyeOff, Copy, Check } from 'lucide-react';
 
 export interface ApiCredentialsCardsProps {
-  shopifyDomain: string; setShopifyDomain: (v: string) => void;
   cjEmail: string; setCjEmail: (v: string) => void;
   cjKey: string; setCjKey: (v: string) => void;
   balanceAlertThreshold: number; setBalanceAlertThreshold: (v: number) => void;
@@ -13,8 +12,6 @@ export interface ApiCredentialsCardsProps {
 }
 
 export const ApiCredentialsCards: React.FC<ApiCredentialsCardsProps> = ({
-  shopifyDomain,
-  setShopifyDomain,
   cjEmail,
   setCjEmail,
   cjKey,
@@ -28,15 +25,12 @@ export const ApiCredentialsCards: React.FC<ApiCredentialsCardsProps> = ({
   const [showCjKey, setShowCjKey] = useState(false);
   const [showZendropKey, setShowZendropKey] = useState(false);
   const [copiedKey, setCopiedKey] = useState(false);
-  const [copiedWebhook, setCopiedWebhook] = useState(false);
-
-  const webhookUrl = `${window.location.origin}/api/webhooks/shopify/orders-create`;
-  const copyText = async (text: string, isKey: boolean) => {
+  const copyText = async (text: string) => {
     if (!text) return;
     await navigator.clipboard.writeText(text);
-    if (isKey) { setCopiedKey(true); setTimeout(() => setCopiedKey(false), 2000); }
-    else { setCopiedWebhook(true); setTimeout(() => setCopiedWebhook(false), 2000); }
-    showToast('success', 'Copied', `${isKey ? 'CJ API Key' : 'Webhook URL'} copied to clipboard.`);
+    setCopiedKey(true);
+    setTimeout(() => setCopiedKey(false), 2000);
+    showToast('success', 'Copied', 'CJ API Key copied to clipboard.');
   };
 
   return (
@@ -79,7 +73,7 @@ export const ApiCredentialsCards: React.FC<ApiCredentialsCardsProps> = ({
             <div className="flex items-center justify-between mb-1">
               <label className="text-xs font-semibold text-slate-700">CJ API Key / Access Token</label>
               {cjKey && (
-                <button type="button" onClick={() => copyText(cjKey, true)} className="text-xs text-teal-600 hover:text-teal-700 flex items-center gap-1 font-medium">
+                <button type="button" onClick={() => copyText(cjKey)} className="text-xs text-teal-600 hover:text-teal-700 flex items-center gap-1 font-medium">
                   {copiedKey ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                   {copiedKey ? 'Copied' : 'Copy Key'}
                 </button>
@@ -113,42 +107,6 @@ export const ApiCredentialsCards: React.FC<ApiCredentialsCardsProps> = ({
             onChange={(e) => setBalanceAlertThreshold(Number(e.target.value) || 0)}
             helperText="Banner alert when wallet balance drops below this amount"
           />
-        </div>
-      </Card>
-
-      <Card className="space-y-4 border-slate-200 shadow-sm">
-        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600"><Webhook className="w-5 h-5" /></div>
-            <div>
-              <h3 className="text-sm font-bold text-slate-900">Shopify Storefront Webhooks</h3>
-              <p className="text-xs text-slate-500">Live order ingestion from your store</p>
-            </div>
-          </div>
-          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border bg-indigo-50 text-indigo-700 border-indigo-200">
-            Storefront
-          </span>
-        </div>
-
-        <div className="space-y-3">
-          <Input
-            label="Shopify Store Domain"
-            value={shopifyDomain}
-            onChange={(e) => setShopifyDomain(e.target.value)}
-            placeholder="your-shop-name.myshopify.com"
-          />
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-xs font-semibold text-slate-700">Orders Create Webhook URL</label>
-              <button type="button" onClick={() => copyText(webhookUrl, false)} className="text-xs text-teal-600 hover:text-teal-700 flex items-center gap-1 font-medium">
-                {copiedWebhook ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                {copiedWebhook ? 'Copied' : 'Copy URL'}
-              </button>
-            </div>
-            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono text-xs text-teal-900 break-all select-all">
-              {webhookUrl}
-            </div>
-          </div>
         </div>
       </Card>
 

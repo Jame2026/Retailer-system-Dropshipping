@@ -46,7 +46,6 @@ export interface PricingRulesDTO {
   maxAutoFulfillAmount?: number;
   lowBalanceThreshold?: number;
   currencySymbol?: string;
-  shopifyDomain?: string;
   cjApiKey?: string;
   cjEmail?: string;
   zendropKey?: string;

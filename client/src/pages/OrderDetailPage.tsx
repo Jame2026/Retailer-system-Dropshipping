@@ -80,8 +80,8 @@ export const OrderDetailPage: React.FC = () => {
 
   return (
     <PageContainer
-      title={`Order ${order.shopifyOrderNumber}`}
-      subtitle={`Placed on ${formatDate(order.shopifyCreatedAt)}`}
+      title={`Order ${order.orderNumber}`}
+      subtitle={`Placed on ${formatDate(order.orderCreatedAt)}`}
       action={
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={() => navigate('/admin/orders')}>
@@ -157,7 +157,7 @@ export const OrderDetailPage: React.FC = () => {
         isOpen={isRetryModalOpen}
         onClose={() => setIsRetryModalOpen(false)}
         orderId={order.id}
-        orderNumber={order.shopifyOrderNumber}
+        orderNumber={order.orderNumber}
         orderStatus={order.status}
         holdExpiresAt={order.holdExpiresAt}
         currentSupplier={order.supplierType}
@@ -168,7 +168,7 @@ export const OrderDetailPage: React.FC = () => {
         isOpen={isCancelModalOpen}
         onClose={() => setIsCancelModalOpen(false)}
         orderId={order.id}
-        orderNumber={order.shopifyOrderNumber}
+        orderNumber={order.orderNumber}
         supplierOrderId={order.supplierOrderId}
         onSuccess={refresh}
       />

@@ -1,7 +1,7 @@
 import { OrderStatus, SupplierType } from '../config/constants.js';
 import { FulfillmentStatus } from '@prisma/client';
 
-export interface ShopifyAddress {
+export interface StoreAddress {
   first_name?: string;
   last_name?: string;
   name: string;
@@ -16,7 +16,7 @@ export interface ShopifyAddress {
   phone?: string | null;
 }
 
-export interface ShopifyLineItem {
+export interface StoreLineItem {
   id: number | string;
   product_id?: number | string | null;
   variant_id: number | string;
@@ -28,7 +28,7 @@ export interface ShopifyLineItem {
   grams?: number;
 }
 
-export interface ShopifyOrderWebhookPayload {
+export interface StoreOrderPayload {
   id: number | string;
   admin_graphql_api_id?: string;
   name: string;
@@ -49,14 +49,14 @@ export interface ShopifyOrderWebhookPayload {
   };
   total_tax?: string | number;
   financial_status: string;
-  shipping_address?: ShopifyAddress;
-  line_items: ShopifyLineItem[];
+  shipping_address?: StoreAddress;
+  line_items: StoreLineItem[];
 }
 
 export interface OrderInspectionDTO {
   id: string;
-  shopifyOrderId: string;
-  shopifyOrderNumber: string;
+  externalOrderId: string;
+  orderNumber: string;
   customerEmail: string;
   status: string;
   totalPrice: number;

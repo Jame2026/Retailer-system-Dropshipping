@@ -1,7 +1,7 @@
 {
   "name": "retailer-system-dropshipping",
   "version": "1.0.0",
-  "description": "Fullstack Retailer Dropshipping Automation System (Shopify & CJ/Zendrop Integration)",
+  "description": "Fullstack Retailer Dropshipping Automation System with CJ Dropshipping integration",
   "scripts": {
     "dev": "concurrently -k -p \"[{name}]\" -n \"DB,SERVER,CLIENT,WORKER\" -c \"yellow.bold,blue.bold,cyan.bold,magenta.bold\" \"npm run db:start --prefix server\" \"npm run dev --prefix server\" \"npm run dev --prefix client\" \"npm run worker --prefix server\"",
     "dev:app": "concurrently -k -p \"[{name}]\" -n \"SERVER,CLIENT\" -c \"blue.bold,cyan.bold\" \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
@@ -12,6 +12,7 @@
     "test": "npm test --prefix server",
     "type-check": "npm run type-check --prefix server && npm run type-check --prefix client",
     "lint": "npm run lint --prefix server && npm run lint --prefix client",
+    "lines": "node scripts/count-lines.mjs",
     "prisma:generate": "npm run prisma:generate --prefix server",
     "prisma:migrate": "npm run prisma:migrate --prefix server",
     "prisma:push": "npm run prisma:push --prefix server",

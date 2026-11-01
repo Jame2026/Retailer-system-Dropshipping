@@ -1,6 +1,6 @@
 # 🚀 Retailer Dropshipping Automation System
 
-Fullstack automated dropshipping operations platform integrating **Shopify**, **CJ Dropshipping**, and **Zendrop** with automatic 6-hour hold buffer safety checks, address normalizer, dynamic pricing rules, and tracking sync.
+Fullstack automated dropshipping operations platform integrating **CJ Dropshipping** with automatic 6-hour hold buffer safety checks, address normalizer, dynamic pricing rules, and tracking sync.
 
 ---
 
