@@ -6,8 +6,10 @@ import {
   ShoppingCart,
   Truck,
   Layers,
-  Sparkles,
+  TrendingUp,
   Settings,
+  Mail,
+  Inbox,
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -17,12 +19,12 @@ export const Sidebar: React.FC = () => {
     { name: 'Orders', path: '/admin/orders', icon: ShoppingCart },
     { name: 'Freight', path: '/admin/shipping', icon: Truck },
     { name: 'Sourcing', path: '/admin/sourcing', icon: Layers },
-    { name: 'Pricing', path: '/admin/pricing', icon: Sparkles },
+    { name: 'Pricing', path: '/admin/pricing', icon: TrendingUp },
     { name: 'Settings', path: '/admin/settings', icon: Settings },
   ];
 
   return (
-    <aside className="fixed left-0 top-16 bottom-0 w-56 bg-[#F4EFE6] border-r border-[#E8E2D6]/70 flex flex-col justify-between p-4 z-20 select-none">
+    <aside className="fixed left-0 top-16 bottom-0 w-56 bg-[#F8F9FA] border-r border-[#E5E7EB] flex flex-col justify-between p-4 z-20 select-none">
       <nav className="space-y-1.5 pt-2">
         {navigationItems.map((item) => {
           const Icon = item.icon;
@@ -34,8 +36,8 @@ export const Sidebar: React.FC = () => {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm transition-all duration-150 ${
                   isActive
-                    ? 'bg-[#E5DFD3] text-[#1F1C18] font-bold shadow-2xs'
-                    : 'text-[#6B655B] hover:text-[#1F1C18] hover:bg-[#ECE5D9]/60 font-medium'
+                    ? 'bg-[#D7EFE4] text-[#064E3B] font-bold shadow-2xs'
+                    : 'text-[#4B5563] hover:text-[#111827] hover:bg-slate-200/60 font-medium'
                 }`
               }
             >
@@ -47,18 +49,20 @@ export const Sidebar: React.FC = () => {
       </nav>
 
       {/* Bottom links */}
-      <div className="pt-4 pb-2 px-3 text-xs text-[#857E74] space-y-1.5 border-t border-[#E8E2D6]/60">
+      <div className="pt-4 pb-2 px-2 text-xs text-[#6B7280] space-y-2 border-t border-[#E5E7EB]">
         <NavLink
           to="/admin/settings"
-          className="block hover:text-[#1F1C18] transition-colors font-medium text-[12px]"
+          className="flex items-center gap-2 hover:text-[#111827] transition-colors font-medium text-[12px]"
         >
-          Order Buffer
+          <Inbox className="w-3.5 h-3.5" />
+          <span>Order Buffer</span>
         </NavLink>
         <NavLink
           to="/admin/settings"
-          className="block hover:text-[#1F1C18] transition-colors font-medium text-[12px]"
+          className="flex items-center gap-2 hover:text-[#111827] transition-colors font-medium text-[12px]"
         >
-          Primary Supplier
+          <Mail className="w-3.5 h-3.5" />
+          <span>Primary Supplier</span>
         </NavLink>
       </div>
     </aside>

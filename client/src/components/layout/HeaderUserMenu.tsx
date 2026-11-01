@@ -104,20 +104,20 @@ export const HeaderUserMenu: React.FC = () => {
         onClick={() => setMenuOpen((open) => !open)}
         onMouseEnter={refreshProfile}
         onFocus={refreshProfile}
-        className="flex items-center gap-2 pl-2 pr-1.5 py-1 rounded-full hover:bg-[#EAE4D8]/60 transition-colors focus:outline-none"
+        className="flex items-center gap-2 pl-1.5 pr-1 py-1 rounded-full hover:bg-slate-100 transition-colors focus:outline-none"
         title="View profile"
         aria-expanded={menuOpen}
       >
-        <div className="w-7 h-7 rounded-full overflow-hidden bg-[#E2DEE7] text-[#554E60] flex items-center justify-center font-bold text-xs shadow-2xs">
+        <div className="w-7 h-7 rounded-full overflow-hidden bg-[#D1EADC] text-[#064E3B] flex items-center justify-center font-bold text-xs shadow-2xs">
           {profile?.avatarUrl ? (
             <img src={profile.avatarUrl} alt={displayName} className="w-full h-full object-cover rounded-full" />
           ) : (
             displayName[0]?.toUpperCase() || 'J'
           )}
         </div>
-        <span className="text-xs font-bold text-[#1F1C18] hidden sm:inline">{displayName}</span>
+        <span className="text-xs font-bold text-[#111827] hidden sm:inline">{displayName}</span>
         <ChevronDown
-          className={`w-3.5 h-3.5 text-[#7A746A] transition-transform ${menuOpen ? 'rotate-180' : ''}`}
+          className={`w-3.5 h-3.5 text-[#6B7280] transition-transform ${menuOpen ? 'rotate-180' : ''}`}
         />
       </button>
 
