@@ -7,7 +7,7 @@ import { sourcingService } from '../services/sourcingService.js';
 import { orderService } from '../services/orderService.js';
 import { Order } from '../types/order.types.js';
 import { DashboardRow } from '../components/modules/dashboard/dashboard.types.js';
-import { DEFAULT_DASHBOARD_ROWS } from '../components/modules/dashboard/dashboard.mock.js';
+import { mapOrderToDashboardRow, exportOrdersToCsv } from '../components/modules/dashboard/dashboard.utils.js';
 import { PlatformHealthCard } from '../components/modules/dashboard/PlatformHealthCard.js';
 import { OverviewSplineChart } from '../components/modules/dashboard/OverviewSplineChart.js';
 import { AlertsCard } from '../components/modules/dashboard/AlertsCard.js';
@@ -16,137 +16,178 @@ import { DashboardFooter } from '../components/modules/dashboard/DashboardFooter
 
 export const DashboardPage: React.FC = () => {
   const { showToast } = useNotification();
-  const { orders, refresh, counts } = useOrders({ limit: 10 });
-  const [selectedRetryOrder, setSelectedRetryOrder] = useState<Order | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [cjAccount, setCjAccount] = useState<{
-    connected: boolean;
-    openId: number | string | null;
-    balance: { amount: number };
-  }>({ connected: true, openId: '59360', balance: { amount: 0.0 } });
-
-  useEffect(() => {
-    sourcingService
-      .getCjAccountInfo()
-      .then((data) => {
-        if (data) {
-          setCjAccount({
-            connected: data.connected ?? true,
-            openId: data.openId ?? '59360',
-            balance: {
-              amount: data.balance?.amount !== undefined ? data.balance.amount : 0.0,
-            },
-          });
-        }
-      })
-      .catch(() => {});
-  }, []);
-
-  const orderRows: DashboardRow[] = orders.slice(0, 5).map((o, idx) => {
-    let statusLabel: 'Issue' | 'Shipped' | 'Failed' = 'Issue';
-    let actionLabel: 'Resolve' | 'Retry' = 'Resolve';
-
-    if (o.status === 'SHIPPED' || o.status === 'DISPATCHED_TO_SUPPLIER') {
-      statusLabel = 'Shipped';
-      actionLabel = 'Retry';
-    } else if (o.status === 'FAILED_BILLING') {
-      statusLabel = 'Failed';
-      actionLabel = 'Resolve';
-    } else {
-      statusLabel = 'Issue';
-      actionLabel = 'Resolve';
-    }
-
-    const fallback = DEFAULT_DASHBOARD_ROWS[idx % DEFAULT_DASHBOARD_ROWS.length];
-    return {
-      id: o.id,
-      orderNumber: o.orderNumber || fallback.orderNumber,
-      customer: o.shippingName || fallback.customer,
-      avatarUrl: fallback.avatarUrl,
-      countryCode: o.shippingCountryCode || fallback.countryCode,
-      status: statusLabel,
-      total: `$${Number(o.totalPrice || 76.5).toFixed(2)}`,
-      action: actionLabel,
-      rawOrder: o,
-    };
+  const { orders, refresh, counts, totalRevenue, total } = useOrders({
+    limit: 10,
+    search: searchQuery,
   });
 
-  const displayRows: DashboardRow[] =
-    orderRows.length === 0
-      ? DEFAULT_DASHBOARD_ROWS
-      : orderRows.length < 5
-        ? [...orderRows, ...DEFAULT_DASHBOARD_ROWS.slice(orderRows.length, 5)]
-        : orderRows;
+  const [selectedRetryOrder, setSelectedRetryOrder] = useState<Order | null>(null);
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [isSyncingCj, setIsSyncingCj] = useState(false);
+  const [filterOnlyIssues, setFilterOnlyIssues] = useState(false);
+  const [cjAccount, setCjAccount] = useState({ connected: true, openId: '59360', balance: { amount: 0.0 } });
 
-  const handleActionClick = (row: DashboardRow) => {
-    if (row.rawOrder) {
-      if (row.action === 'Retry') {
-        setSelectedRetryOrder(row.rawOrder);
-      } else {
-        orderService
-          .manualOverride({ orderId: row.rawOrder.id, action: 'RELEASE_NOW' })
-          .then(() => {
-            showToast('success', 'Resolved', `Order ${row.orderNumber} resolved.`);
-            refresh();
-          })
-          .catch((err) => showToast('error', 'Resolve failed', err.message));
+  useEffect(() => {
+    sourcingService.getCjAccountInfo().then((data) => {
+      if (data) {
+        setCjAccount({
+          connected: data.connected ?? true,
+          openId: String(data.openId ?? '59360'),
+          balance: { amount: data.balance?.amount ?? 0.0 },
+        });
       }
-    } else {
-      showToast('info', `${row.action} Triggered`, `Action for ${row.customer} (${row.orderNumber}) initiated.`);
+    }).catch(() => {});
+  }, []);
+
+  const handleRefreshCj = async () => {
+    setIsSyncingCj(true);
+    try {
+      const data = await sourcingService.getCjAccountInfo(true);
+      if (data) {
+        setCjAccount({
+          connected: data.connected ?? true,
+          openId: String(data.openId ?? '59360'),
+          balance: { amount: data.balance?.amount ?? 0.0 },
+        });
+        showToast('success', 'CJ Health Verified', `Ping 200 OK — Supplier ID #${data.openId ?? '59360'}`);
+      }
+    } catch {
+      showToast('error', 'CJ Ping Failed', 'Could not reach CJ Dropshipping API.');
+    } finally {
+      setIsSyncingCj(false);
     }
   };
 
-  const issuesCount = (counts['FAILED_BILLING'] ?? 0) + (counts['MANUAL_REVIEW'] ?? 0) + (counts['PENDING_HOLD'] ?? 0);
-  const alertsDisplay = issuesCount > 0 ? `${issuesCount} Alerts` : '2 Alerts';
+  const handleSimulateOrder = async () => {
+    try {
+      setIsSimulating(true);
+      const num = Math.floor(1000 + Math.random() * 9000);
+      const names = ['Michael Scott', 'Jessica Davis', 'David Miller', 'Alex Smith', 'Emma Watson'];
+      const randomName = names[Math.floor(Math.random() * names.length)];
+      await orderService.simulateOrder({
+        id: Date.now().toString(),
+        order_number: num,
+        name: `#${num}`,
+        created_at: new Date().toISOString(),
+        financial_status: 'paid',
+        currency: 'USD',
+        total_price: (35 + Math.random() * 80).toFixed(2),
+        subtotal_price: '30.00',
+        email: `${randomName.toLowerCase().replace(' ', '.')}@example.com`,
+        shipping_address: {
+          name: randomName,
+          address1: '123 Market Street',
+          city: 'San Francisco',
+          province: 'California',
+          province_code: 'CA',
+          zip: '94105',
+          country: 'United States',
+          country_code: 'US',
+        },
+      });
+      showToast('success', 'Order Simulated', `New order #${num} created in database.`);
+      refresh();
+    } catch (err: any) {
+      showToast('error', 'Simulation Failed', err.message);
+    } finally {
+      setIsSimulating(false);
+    }
+  };
+
+  const orderRows: DashboardRow[] = orders.map(mapOrderToDashboardRow);
+  const displayRows = filterOnlyIssues
+    ? orderRows.filter((r) => ['Issue', 'Failed', 'Hold', 'Cancelled'].includes(r.status))
+    : orderRows;
+
+  const handleActionClick = async (row: DashboardRow) => {
+    if (!row.rawOrder) return;
+    if (row.action === 'Retry') {
+      setSelectedRetryOrder(row.rawOrder);
+      return;
+    }
+    setActionLoadingId(row.id);
+    try {
+      if (row.action === 'Sync') {
+        await orderService.syncCjStatus(row.rawOrder.id);
+        showToast('success', 'Status Synced', `Synced tracking for ${row.orderNumber}`);
+      } else {
+        await orderService.manualOverride({ orderId: row.rawOrder.id, action: 'RELEASE_NOW' });
+        showToast('success', 'Order Released', `Dispatched ${row.orderNumber} to supplier.`);
+      }
+      refresh();
+    } catch (err: any) {
+      showToast('error', 'Action Failed', err.message);
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleExport = () => {
+    exportOrdersToCsv(displayRows);
+    showToast('success', 'Exported', 'Downloaded live CSV orders report.');
+  };
+
+  const issuesCount = (counts['FAILED_BILLING'] ?? 0) + (counts['MANUAL_REVIEW'] ?? 0) + (counts['CANCELLED'] ?? 0);
 
   return (
     <div className="p-6 md:p-8 w-full flex-1 flex flex-col justify-between space-y-6 text-[#111827]">
-      {/* Title & Subtitle + Export Action */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-[#111827] tracking-tight">
-            Dashboard
-          </h1>
-          <p className="text-sm text-[#6B7280] mt-1 font-medium">
-            Store overview and real-time order automation
-          </p>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-[#111827] tracking-tight">Dashboard</h1>
+          <p className="text-sm text-[#6B7280] mt-1 font-medium">Store overview and real-time order automation</p>
         </div>
-
         <button
           type="button"
-          onClick={() => showToast('info', 'Export', 'Downloading overview report...')}
+          onClick={handleExport}
           className="w-9 h-9 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-center text-[#4B5563] shadow-2xs transition-all cursor-pointer"
-          title="Share / Export"
+          title="Export Orders CSV"
         >
           <Upload className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Platform Health Card */}
-      <PlatformHealthCard balanceAmount={cjAccount.balance?.amount} />
+      <PlatformHealthCard
+        balanceAmount={cjAccount.balance?.amount}
+        openId={cjAccount.openId}
+        isSyncing={isSyncingCj}
+        onRefresh={handleRefreshCj}
+      />
 
-      {/* Lower Section (2 Columns) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1">
         <div className="lg:col-span-5 flex flex-col gap-5 justify-between">
-          <OverviewSplineChart />
-          <AlertsCard countText={alertsDisplay} />
+          <OverviewSplineChart
+            totalRevenue={totalRevenue}
+            ordersCount={total}
+            avgFulfillmentHours={3.2}
+          />
+          <AlertsCard
+            countText={`${issuesCount} Alert${issuesCount === 1 ? '' : 's'}`}
+            isActiveFilter={filterOnlyIssues}
+            onToggleFilter={() => setFilterOnlyIssues(!filterOnlyIssues)}
+          />
         </div>
 
         <div className="lg:col-span-7 flex flex-col">
-          <RecentOrdersTable rows={displayRows} onActionClick={handleActionClick} />
+          <RecentOrdersTable
+            rows={displayRows}
+            onActionClick={handleActionClick}
+            onSimulateOrder={handleSimulateOrder}
+            isSimulating={isSimulating}
+            actionLoadingId={actionLoadingId}
+          />
         </div>
       </div>
 
-      {/* Bottom Search Bar and Footer Utility Links */}
       <DashboardFooter searchQuery={searchQuery} onSearchChange={setSearchQuery} />
 
-      {/* Manual retry modal for orders */}
       {selectedRetryOrder && (
         <ManualRetryModal
           isOpen={!!selectedRetryOrder}
           onClose={() => setSelectedRetryOrder(null)}
           orderId={selectedRetryOrder.id}
-          orderNumber={selectedRetryOrder.orderNumber}
+          orderNumber={selectedRetryOrder.shopifyOrderNumber || selectedRetryOrder.orderNumber}
           orderStatus={selectedRetryOrder.status}
           holdExpiresAt={selectedRetryOrder.holdExpiresAt}
           currentSupplier={selectedRetryOrder.supplierType}

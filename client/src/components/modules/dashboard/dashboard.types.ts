@@ -6,8 +6,8 @@ export interface DashboardRow {
   customer: string;
   avatarUrl: string;
   countryCode: string;
-  status: 'Issue' | 'Shipped' | 'Failed';
+  status: 'Issue' | 'Shipped' | 'Failed' | 'Hold' | 'Cancelled' | 'Processing';
   total: string;
-  action: 'Resolve' | 'Retry';
+  action: 'Resolve' | 'Retry' | 'Sync';
   rawOrder?: Order;
 }

@@ -50,6 +50,8 @@ export interface Order {
   id: string;
   externalOrderId: string;
   orderNumber: string;
+  shopifyOrderNumber?: string;
+  shopifyOrderId?: string;
   orderCreatedAt: string;
   customerEmail: string;
   customerPhone?: string | null;
